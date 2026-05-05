@@ -3,30 +3,116 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard - CâmaraGest</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Dashboard - Câmara de Iperó</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="../assets/css/styles.css" />
+  <style>
+    /* Header VIP */
+    .hero-greeting {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
+      border-radius: 1.25rem;
+      padding: 1.75rem 2rem;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 50px -15px rgba(15,81,50,0.5);
+    }
+    .hero-greeting::before {
+      content: ''; position: absolute;
+      top: -80px; right: -80px;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(255,215,0,0.4) 0%, transparent 70%);
+      filter: blur(40px);
+      pointer-events: none;
+    }
+    .hero-greeting::after {
+      content: ''; position: absolute;
+      bottom: -60px; left: 30%;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%);
+      filter: blur(40px);
+      pointer-events: none;
+    }
+    .vip-avatar {
+      position: relative;
+      width: 72px; height: 72px;
+    }
+    .vip-avatar::before {
+      content: ''; position: absolute; inset: -3px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, #FFD700, #FFA500, #FFD700, #FFC107, #FFD700);
+      animation: spin 6s linear infinite;
+    }
+    .vip-avatar img {
+      position: relative; z-index: 1;
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center 25%;
+      border: 3px solid var(--primary-dark);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .vip-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.3rem 0.8rem;
+      background: rgba(255,215,0,0.2);
+      border: 1px solid rgba(255,215,0,0.5);
+      color: #FFD700;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Chart container */
+    .chart-card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      transition: all 0.3s;
+    }
+    .chart-card:hover { box-shadow: var(--shadow); }
+  </style>
 </head>
 <body>
 
   <div id="navbar"></div>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <header class="flex items-center justify-between mb-8 flex-wrap gap-3">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p class="text-gray-500 text-sm" id="welcome"></p>
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- HEADER VIP PERSONALIZADO -->
+    <section class="hero-greeting mb-6 fade-in">
+      <div class="relative" style="z-index: 2;">
+        <div class="flex items-center gap-4 flex-wrap">
+          <div class="vip-avatar flex-shrink-0">
+            <img id="vipAvatar" src="" alt="">
+          </div>
+          <div class="flex-1 min-w-0">
+            <span id="vipBadge" class="vip-badge mb-2"></span>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-white leading-tight" id="vipGreeting"></h1>
+            <p class="text-white/80 text-sm mt-1" id="vipMsg"></p>
+          </div>
+          <div class="text-right hide-mobile">
+            <div class="text-white/80 text-xs uppercase tracking-widest font-semibold">Hoje</div>
+            <div class="text-white text-xl font-bold" id="vipDate"></div>
+            <div class="text-white/70 text-xs" id="vipDayName"></div>
+          </div>
+        </div>
       </div>
-      <div class="text-sm text-gray-500" id="dataAtual"></div>
-    </header>
+    </section>
 
     <!-- Cards resumo -->
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <div class="card metric-card green card-hover">
         <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Tarefas pendentes</div>
         <div class="metric-value" id="totalPendentes">0</div>
-        <div class="text-xs text-gray-500 mt-2" id="pendentesSub">|</div>
+        <div class="text-xs text-gray-500 mt-2" id="pendentesSub"></div>
       </div>
       <div class="card metric-card amber card-hover">
         <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Em andamento</div>
@@ -45,20 +131,53 @@
       </div>
     </section>
 
+    <!-- GRÁFICOS ANIMADOS -->
+    <section class="grid lg:grid-cols-3 gap-4 mb-6">
+      <div class="chart-card lg:col-span-2">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-gray-900">Distribuição de tarefas por status</h3>
+          <span class="text-xs text-gray-500" id="totalTarefasGrafico"></span>
+        </div>
+        <div style="height: 240px; position: relative;">
+          <canvas id="chartTarefas"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-gray-900">Relatórios por categoria</h3>
+        </div>
+        <div style="height: 240px; position: relative;">
+          <canvas id="chartCategorias"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Atividade da semana (linha) -->
+    <section class="chart-card mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="font-bold text-gray-900">Atividade dos últimos 7 dias</h3>
+          <p class="text-xs text-gray-500">Tarefas criadas e relatórios publicados na semana</p>
+        </div>
+      </div>
+      <div style="height: 220px; position: relative;">
+        <canvas id="chartAtividade"></canvas>
+      </div>
+    </section>
+
+    <!-- Listas -->
     <div class="grid lg:grid-cols-3 gap-6">
-      <!-- Próximas tarefas -->
       <section class="card lg:col-span-2">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-lg">Próximas tarefas</h2>
+          <h2 class="font-bold text-lg text-gray-900">Próximas tarefas</h2>
           <a href="tarefas.html" class="text-sm font-semibold hover:underline" style="color: var(--primary);">Ver todas →</a>
         </div>
         <div id="listaTarefas" class="space-y-2"></div>
       </section>
 
-      <!-- Relatórios recentes -->
       <section class="card">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-lg">Relatórios recentes</h2>
+          <h2 class="font-bold text-lg text-gray-900">Relatórios recentes</h2>
           <a href="relatorios.html" class="text-sm font-semibold hover:underline" style="color: var(--primary);">Ver todos →</a>
         </div>
         <div id="listaRelatorios" class="space-y-3"></div>
@@ -66,8 +185,8 @@
     </div>
 
     <!-- Equipe -->
-    <section class="mt-8">
-      <h2 class="font-bold text-lg mb-4">Equipe da Câmara</h2>
+    <section class="mt-8" id="secaoEquipe">
+      <h2 class="font-bold text-lg mb-4 text-gray-900">Sua equipe</h2>
       <div id="listaVereadores" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"></div>
     </section>
   </main>
@@ -78,83 +197,223 @@
   <script>
     if (!Auth.requireAuth()) throw new Error('redirecting');
     const user = Auth.current();
-
     document.getElementById('navbar').innerHTML = UI.renderAppNavbar('dashboard');
-    document.getElementById('welcome').textContent = `Olá, ${user.nome.split(' ')[0]}. Aqui está o resumo da sua Câmara.`;
-    document.getElementById('dataAtual').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-    // Métricas com animação de contador
-    const pend = MOCK_DATA.tarefas.filter(t => t.status === 'pendente');
-    const and  = MOCK_DATA.tarefas.filter(t => t.status === 'em_andamento');
-    function animateCount(id, target) {
+    // === HEADER VIP ===
+    const hora = new Date().getHours();
+    const saud = hora < 12 ? 'Bom dia' : (hora < 18 ? 'Boa tarde' : 'Boa noite');
+    const primeiroNome = user.nome.split(' ')[0];
+
+    document.getElementById('vipAvatar').src = user.foto;
+    document.getElementById('vipBadge').textContent = user.isAdmin ? '⚜️ PRESIDENTE DA CÂMARA' : '🏛️ ' + user.cargo.toUpperCase();
+    document.getElementById('vipGreeting').textContent = `${saud}, ${primeiroNome}.`;
+    document.getElementById('vipMsg').textContent = user.isAdmin
+      ? `Sua Câmara está sob seu comando. Aqui está o panorama completo de Iperó.`
+      : `Aqui estão suas tarefas e atividades em Iperó.`;
+
+    const data = new Date();
+    document.getElementById('vipDate').textContent = data.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+    document.getElementById('vipDayName').textContent = data.toLocaleDateString('pt-BR', { weekday: 'long' });
+
+    // === PERMISSÃO ===
+    const tarefasVisiveis = user.isAdmin
+      ? MOCK_DATA.tarefas
+      : MOCK_DATA.tarefas.filter(t => t.responsavelId === user.id || t.criadorId === user.id);
+
+    // === MÉTRICAS COM ANIMAÇÃO SUAVE ===
+    const pend = tarefasVisiveis.filter(t => t.status === 'pendente');
+    const and = tarefasVisiveis.filter(t => t.status === 'em_andamento');
+    const conc = tarefasVisiveis.filter(t => t.status === 'concluida');
+
+    function animateCount(id, target, duration = 1400) {
       const el = document.getElementById(id);
-      let cur = 0;
-      const step = Math.max(1, Math.ceil(target / 30));
-      const t = setInterval(() => {
-        cur += step;
-        if (cur >= target) { cur = target; clearInterval(t); }
-        el.textContent = cur;
-      }, 30);
+      if (!el) return;
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        el.textContent = Math.floor(target * eased);
+        if (progress < 1) requestAnimationFrame(tick);
+        else el.textContent = target;
+      }
+      requestAnimationFrame(tick);
     }
     animateCount('totalPendentes', pend.length);
     animateCount('totalAndamento', and.length);
     animateCount('totalRelatorios', MOCK_DATA.relatorios.length);
     animateCount('totalVereadores', MOCK_DATA.vereadores.filter(v => v.ativo).length);
 
-    const minhasPendentes = pend.filter(t => t.responsavelId === user.id).length;
-    document.getElementById('pendentesSub').textContent = user.isAdmin
-      ? `${pend.length} no total da Câmara`
-      : `${minhasPendentes} são suas`;
+    document.getElementById('pendentesSub').textContent = user.isAdmin ? 'Total da Câmara' : 'Suas tarefas';
 
-    // Tarefas (mostra as 5 mais próximas, ativas)
-    const proximas = MOCK_DATA.tarefas
+    // === GRÁFICO 1: TAREFAS POR STATUS (BARRAS) ===
+    const ctx1 = document.getElementById('chartTarefas').getContext('2d');
+    document.getElementById('totalTarefasGrafico').textContent = `${tarefasVisiveis.length} tarefas`;
+    new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: ['Pendente', 'Em andamento', 'Concluída'],
+        datasets: [{
+          label: 'Tarefas',
+          data: [pend.length, and.length, conc.length],
+          backgroundColor: [
+            'rgba(156, 163, 175, 0.85)',
+            'rgba(245, 158, 11, 0.85)',
+            'rgba(16, 185, 129, 0.85)'
+          ],
+          borderColor: ['#9ca3af', '#f59e0b', '#10b981'],
+          borderWidth: 2,
+          borderRadius: 8,
+          hoverBackgroundColor: ['#9ca3af', '#f59e0b', '#10b981']
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        animation: { duration: 1800, easing: 'easeOutQuart' },
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0F5132', padding: 12 } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1, color: '#6B7280' }, grid: { color: '#F1F3F5' } },
+          x: { ticks: { color: '#374151', font: { weight: 600 } }, grid: { display: false } }
+        }
+      }
+    });
+
+    // === GRÁFICO 2: RELATÓRIOS POR CATEGORIA (DONUT) ===
+    const cats = {};
+    MOCK_DATA.relatorios.forEach(r => { cats[r.categoria] = (cats[r.categoria] || 0) + 1; });
+    const ctx2 = document.getElementById('chartCategorias').getContext('2d');
+    new Chart(ctx2, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(cats).map(k => categoriaLabel(k)),
+        datasets: [{
+          data: Object.values(cats),
+          backgroundColor: ['#0F5132', '#FFD700', '#3b82f6', '#9ca3af', '#10b981'],
+          borderWidth: 3,
+          borderColor: '#fff',
+          hoverOffset: 12
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        animation: { duration: 1800, easing: 'easeOutQuart' },
+        plugins: {
+          legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 }, color: '#374151' } },
+          tooltip: { backgroundColor: '#0F5132', padding: 12 }
+        },
+        cutout: '65%'
+      }
+    });
+
+    // === GRÁFICO 3: ATIVIDADE 7 DIAS (LINHA) ===
+    const dias = [];
+    const hoje = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(hoje); d.setDate(hoje.getDate() - i);
+      dias.push(d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
+    }
+    // Dados simulados (em produção seria do banco)
+    const seed = user.id.charCodeAt(0);
+    const tarefasPorDia = [2, 1, 3, 2, 4, 3, 5].map((v, i) => Math.max(0, v + ((seed + i) % 3) - 1));
+    const relatoriosPorDia = [1, 0, 2, 1, 3, 2, 1].map((v, i) => Math.max(0, v + ((seed + i + 2) % 3) - 1));
+
+    const ctx3 = document.getElementById('chartAtividade').getContext('2d');
+    new Chart(ctx3, {
+      type: 'line',
+      data: {
+        labels: dias,
+        datasets: [
+          {
+            label: 'Tarefas',
+            data: tarefasPorDia,
+            borderColor: '#0F5132',
+            backgroundColor: 'rgba(15, 81, 50, 0.12)',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#0F5132',
+            pointRadius: 4,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'Relatórios',
+            data: relatoriosPorDia,
+            borderColor: '#FFA500',
+            backgroundColor: 'rgba(255, 165, 0, 0.12)',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#FFA500',
+            pointRadius: 4,
+            pointHoverRadius: 7
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        animation: { duration: 2000, easing: 'easeOutQuart' },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 }, color: '#374151' } },
+          tooltip: { backgroundColor: '#0F5132', padding: 12 }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1, color: '#6B7280' }, grid: { color: '#F1F3F5' } },
+          x: { ticks: { color: '#6B7280', font: { size: 11 } }, grid: { display: false } }
+        }
+      }
+    });
+
+    // === LISTAS ===
+    const proximas = tarefasVisiveis
       .filter(t => t.status !== 'concluida')
-      .sort((a,b) => a.prazo.localeCompare(b.prazo))
+      .sort((a, b) => a.prazo.localeCompare(b.prazo))
       .slice(0, 5);
 
     document.getElementById('listaTarefas').innerHTML = proximas.map(t => {
       const resp = getVereador(t.responsavelId);
       const vencida = new Date(t.prazo) < new Date(new Date().toDateString());
+      let bolinhaCor;
+      if (vencida) bolinhaCor = '#dc2626';
+      else if (t.status === 'em_andamento') bolinhaCor = '#f59e0b';
+      else bolinhaCor = '#9ca3af';
       return `
-        <div class="flex items-center justify-between p-3 rounded border border-gray-100 hover:bg-gray-50">
+        <div class="flex items-center justify-between p-3 rounded border border-gray-100 hover:bg-gray-50 transition">
           <div class="flex items-center gap-3 min-w-0">
+            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${bolinhaCor}; flex-shrink:0; box-shadow: 0 0 0 3px ${bolinhaCor}33;"></span>
             <img src="${resp.foto}" class="avatar" style="width:36px; height:36px;" alt="">
             <div class="min-w-0">
               <div class="font-semibold text-sm truncate text-gray-900">${t.titulo}</div>
-              <div class="text-xs text-gray-500">${resp.nome.split(' ').slice(0,2).join(' ')},Prazo: ${fmtData(t.prazo)} ${vencida ? '<span class="text-red-600 font-semibold">⚠ Vencida</span>' : ''}</div>
+              <div class="text-xs text-gray-500">${resp.nome.split(' ').slice(0,2).join(' ')}, prazo ${fmtData(t.prazo)} ${vencida ? '<span class="text-red-600 font-semibold">⚠ Vencida</span>' : ''}</div>
             </div>
           </div>
           <div class="flex items-center gap-2 flex-shrink-0">
             <span class="badge ${prioridadeBadge(t.prioridade)} hide-mobile">${prioridadeLabel(t.prioridade)}</span>
-            <span class="badge ${statusBadge(t.status)}">${statusLabel(t.status)}</span>
           </div>
         </div>
       `;
-    }).join('') || '<p class="text-gray-500 text-sm">Nenhuma tarefa pendente.</p>';
+    }).join('') || '<p class="text-gray-500 text-sm py-4 text-center">Você está em dia! Nenhuma tarefa pendente.</p>';
 
-    // Relatórios recentes
-    const recentes = [...MOCK_DATA.relatorios].sort((a,b) => b.criadoEm.localeCompare(a.criadoEm)).slice(0, 4);
+    const recentes = [...MOCK_DATA.relatorios].sort((a, b) => b.criadoEm.localeCompare(a.criadoEm)).slice(0, 4);
     document.getElementById('listaRelatorios').innerHTML = recentes.map(r => {
       const autor = getVereador(r.autorId);
       return `
-        <a href="relatorio.html?id=${r.id}" class="flex gap-3 p-2 rounded hover:bg-gray-50" style="text-decoration: none; color: inherit;">
+        <a href="relatorio.html?id=${r.id}" class="flex gap-3 p-2 rounded hover:bg-gray-50 transition" style="text-decoration: none; color: inherit;">
           <img src="${r.imagens[0]?.url}" class="w-14 h-14 rounded object-cover flex-shrink-0" alt="" onerror="this.onerror=null; this.src=window.imgFallback;">
           <div class="min-w-0">
             <div class="font-semibold text-sm truncate text-gray-900">${r.titulo}</div>
-            <div class="text-xs text-gray-500">${autor.nome.split(' ').slice(0,2).join(' ')},${fmtData(r.criadoEm)}</div>
+            <div class="text-xs text-gray-500">${autor.nome.split(' ').slice(0,2).join(' ')}, ${fmtData(r.criadoEm)}</div>
             <span class="badge badge-primary mt-1" style="font-size: 0.65rem;">${categoriaLabel(r.categoria)}</span>
           </div>
         </a>
       `;
     }).join('');
 
-    // Equipe
     document.getElementById('listaVereadores').innerHTML = MOCK_DATA.vereadores.filter(v => v.ativo).map(v => `
       <a href="vereador.html?id=${v.id}" class="card text-center p-4 hover:scale-105 transition-transform" style="text-decoration: none; color: inherit;">
         <img src="${v.foto}" class="avatar mx-auto mb-2" alt="">
         <div class="font-semibold text-sm truncate text-gray-900">${v.nome.split(' ').slice(0,2).join(' ')}</div>
         <div class="text-xs text-gray-500 truncate">${v.cargo}</div>
-        ${v.isAdmin ? '<span class="badge badge-accent mt-1" style="font-size: 0.65rem;">Admin</span>' : ''}
+        ${v.isAdmin ? '<span class="badge badge-accent mt-1" style="font-size: 0.65rem;">Presidente</span>' : ''}
       </a>
     `).join('');
   </script>

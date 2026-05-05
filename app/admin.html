@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel Administrativo - CâmaraGest</title>
+  <title>Painel Administrativo - Câmara de Iperó</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="../assets/css/styles.css" />
@@ -62,11 +62,38 @@
     document.getElementById('navbar').innerHTML = UI.renderAppNavbar('admin');
 
     let vereadores = JSON.parse(JSON.stringify(MOCK_DATA.vereadores));
+    let primeiraRender = true;
+
+    function animateCount(id, target, duration = 1400) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.floor(target * eased);
+        if (progress < 1) requestAnimationFrame(tick);
+        else el.textContent = target;
+      }
+      requestAnimationFrame(tick);
+    }
 
     function render() {
-      document.getElementById('totalAtivos').textContent = vereadores.filter(v => v.ativo).length;
-      document.getElementById('totalAdmin').textContent = vereadores.filter(v => v.isAdmin).length;
-      document.getElementById('totalGeral').textContent = vereadores.length;
+      const ativos = vereadores.filter(v => v.ativo).length;
+      const admins = vereadores.filter(v => v.isAdmin).length;
+      const total = vereadores.length;
+
+      if (primeiraRender) {
+        animateCount('totalAtivos', ativos);
+        animateCount('totalAdmin', admins);
+        animateCount('totalGeral', total);
+        primeiraRender = false;
+      } else {
+        document.getElementById('totalAtivos').textContent = ativos;
+        document.getElementById('totalAdmin').textContent = admins;
+        document.getElementById('totalGeral').textContent = total;
+      }
 
       document.getElementById('tbodyVer').innerHTML = vereadores.map(v => `
         <tr class="border-t border-gray-100 hover:bg-gray-50">

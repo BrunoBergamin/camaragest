@@ -120,7 +120,7 @@
   <footer class="bg-gray-900 text-white py-8 text-sm">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <p class="text-gray-400 mb-2">Câmara Municipal de Iperó,Portal de Transparência</p>
-      <p class="text-gray-500 text-xs">Plataforma <a href="index.html" class="hover:text-white" style="color: var(--accent);">CâmaraGest</a>. Gestão para Câmaras Municipais</p>
+      <p class="text-gray-500 text-xs">Plataforma <a href="index.html" class="hover:text-white" style="color: var(--accent);">Câmara de Iperó</a>. Gestão para Câmaras Municipais</p>
     </div>
   </footer>
 
@@ -148,8 +148,22 @@
       </div>
     `).join('');
 
-    document.getElementById('numVereadores').textContent = MOCK_DATA.vereadores.filter(v => v.ativo).length;
-    document.getElementById('numRelatorios').textContent = MOCK_DATA.relatorios.length;
+    function animateCount(id, target, duration = 1400) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.floor(target * eased);
+        if (progress < 1) requestAnimationFrame(tick);
+        else el.textContent = target;
+      }
+      requestAnimationFrame(tick);
+    }
+    animateCount('numVereadores', MOCK_DATA.vereadores.filter(v => v.ativo).length);
+    animateCount('numRelatorios', MOCK_DATA.relatorios.length);
 
     // Relatórios públicos
     document.getElementById('gridRelatorios').innerHTML = MOCK_DATA.relatorios.map(r => {

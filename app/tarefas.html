@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tarefas - CâmaraGest</title>
+  <title>Tarefas - Câmara de Iperó</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="../assets/css/styles.css" />
@@ -139,12 +139,19 @@
       const pri = document.getElementById('filtroPri').value;
       const status = document.getElementById('filtroStatus').value;
       return tarefas.filter(t => {
+        // Permissão: vereador comum só vê tarefas em que é responsável ou criador
+        if (!user.isAdmin && t.responsavelId !== user.id && t.criadorId !== user.id) return false;
         if (busca && !(t.titulo.toLowerCase().includes(busca) || t.descricao.toLowerCase().includes(busca))) return false;
         if (resp && t.responsavelId !== resp) return false;
         if (pri && t.prioridade !== pri) return false;
         if (status && t.status !== status) return false;
         return true;
       });
+    }
+
+    // Esconde filtro de responsável para vereador comum (só vê as próprias)
+    if (!user.isAdmin) {
+      document.getElementById('filtroResp').parentElement.style.display = 'none';
     }
 
     function render() {
@@ -191,9 +198,17 @@
           document.getElementById(`count${id}`).textContent = col.length;
           document.getElementById(`col${id}`).innerHTML = col.map(t => {
             const r = getVereador(t.responsavelId);
+            const vencida = new Date(t.prazo) < new Date(new Date().toDateString()) && t.status !== 'concluida';
+            // Bolinha de status: verde (concluída), amarela (em andamento), vermelha (em atraso), cinza (pendente)
+            let bolinhaCor, bolinhaLabel;
+            if (t.status === 'concluida') { bolinhaCor = '#10b981'; bolinhaLabel = 'Concluída'; }
+            else if (vencida) { bolinhaCor = '#dc2626'; bolinhaLabel = 'Em atraso'; }
+            else if (t.status === 'em_andamento') { bolinhaCor = '#f59e0b'; bolinhaLabel = 'Em andamento'; }
+            else { bolinhaCor = '#9ca3af'; bolinhaLabel = 'Pendente'; }
             return `
               <div class="kanban-card priority-${t.prioridade}" onclick="abrirTarefa('${t.id}')">
                 <div class="font-semibold text-sm mb-1 flex items-center gap-2 text-gray-900">
+                  <span title="${bolinhaLabel}" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${bolinhaCor}; flex-shrink:0; box-shadow: 0 0 0 2px ${bolinhaCor}33;"></span>
                   ${t.videochamada ? '<span title="Videochamada">🎥</span>' : ''}
                   <span>${t.titulo}</span>
                 </div>
@@ -202,11 +217,11 @@
                     <img src="${r.foto}" class="w-5 h-5 rounded-full object-cover" alt="">
                     <span class="text-xs text-gray-500">${r.nome.split(' ')[0]}</span>
                   </div>
-                  <span class="text-xs text-gray-500">${fmtData(t.prazo)}</span>
+                  <span class="text-xs ${vencida ? 'text-red-600 font-semibold' : 'text-gray-500'}">${fmtData(t.prazo)}${vencida ? ' ⚠' : ''}</span>
                 </div>
               </div>
             `;
-          }).join('') || '<p class="text-gray-400 text-sm text-center py-4">|</p>';
+          }).join('') || '<p class="text-gray-400 text-sm text-center py-4">—</p>';
         });
       }
     }
@@ -247,24 +262,37 @@
       });
     };
 
-    // Nova tarefa (admin)
+    // Nova tarefa
+    // - Admin: pode atribuir a qualquer vereador
+    // - Vereador: cria tarefa para si mesmo (responsável fixo)
     document.getElementById('btnNova').addEventListener('click', () => {
-      if (!user.isAdmin) {
-        UI.toast('Apenas o presidente cria tarefas', 'warning');
-        return;
+      const tituloModal = user.isAdmin ? 'Nova tarefa (atribuir a um vereador)' : 'Nova tarefa pessoal';
+
+      let respHTML;
+      if (user.isAdmin) {
+        const optsResp = MOCK_DATA.vereadores.map(v => `<option value="${v.id}">${v.nome}</option>`).join('');
+        respHTML = `<div><label class="form-label">Atribuir para</label><select class="form-select" name="responsavelId" required>${optsResp}</select></div>`;
+      } else {
+        respHTML = `
+          <div>
+            <label class="form-label">Responsável</label>
+            <div class="form-input flex items-center gap-2" style="background: var(--surface-alt); cursor: not-allowed;">
+              <img src="${user.foto}" class="w-6 h-6 rounded-full object-cover" alt="">
+              <span class="text-gray-700">${user.nome} (você)</span>
+            </div>
+            <input type="hidden" name="responsavelId" value="${user.id}">
+          </div>
+        `;
       }
-      if (Auth.blockIfDemo('criar tarefa permanente')) {
-        // No demo, ainda criamos mas em memória só
-      }
-      const optsResp = MOCK_DATA.vereadores.map(v => `<option value="${v.id}">${v.nome}</option>`).join('');
+
       const m = UI.modal({
-        title: 'Nova tarefa',
+        title: tituloModal,
         body: `
           <form id="formNova" class="space-y-3">
-            <div><label class="form-label">Título</label><input class="form-input" name="titulo" required></div>
-            <div><label class="form-label">Descrição</label><textarea class="form-textarea" name="descricao" required></textarea></div>
+            <div><label class="form-label">Título</label><input class="form-input" name="titulo" required placeholder="Ex: Visita ao bairro Vila Nova"></div>
+            <div><label class="form-label">Descrição</label><textarea class="form-textarea" name="descricao" required placeholder="Detalhes do que precisa ser feito..."></textarea></div>
             <div class="grid grid-cols-2 gap-3">
-              <div><label class="form-label">Responsável</label><select class="form-select" name="responsavelId" required>${optsResp}</select></div>
+              ${respHTML}
               <div><label class="form-label">Prazo</label><input class="form-input" type="date" name="prazo" required></div>
               <div><label class="form-label">Prioridade</label>
                 <select class="form-select" name="prioridade">
@@ -285,7 +313,7 @@
                 <input type="checkbox" name="videochamada" id="chkVideo" style="width: 1.1rem; height: 1.1rem;">
                 <div>
                   <div class="font-semibold flex items-center gap-2">🎥 Reunião por videochamada</div>
-                  <p class="text-xs text-gray-600">Marque para gerar uma sala de reunião online (Jitsi). Vereadores poderão entrar com 1 clique.</p>
+                  <p class="text-xs text-gray-600">Marque para criar uma sala de reunião por vídeo junto com a tarefa.</p>
                 </div>
               </label>
             </div>
@@ -303,10 +331,9 @@
         d.id = 't' + Date.now();
         d.criadorId = user.id;
         d.criadaEm = new Date().toISOString().slice(0,10);
-        // Videochamada: gera sala única se marcado
         if (document.getElementById('chkVideo').checked) {
           d.videochamada = true;
-          d.salaJitsi = 'CamaraGest-' + d.titulo.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20) + '-' + Date.now().toString(36);
+          d.salaJitsi = 'Ipero-' + d.titulo.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20) + '-' + Date.now().toString(36);
           UI.toast('Tarefa criada com sala de videochamada!', 'success', 3500);
         } else {
           UI.toast('Tarefa criada!', 'success');

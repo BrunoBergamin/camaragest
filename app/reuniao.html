@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reunião Online - CâmaraGest</title>
+  <title>Reunião Online - Câmara de Iperó</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="../assets/css/styles.css" />
@@ -215,7 +215,7 @@
       document.getElementById('link-da-sala').textContent = linkSala;
 
       // Configura links de compartilhamento
-      const msg = encodeURIComponent(`Você foi convidado para uma reunião na CâmaraGest. Clique no link para entrar: ${linkSala}`);
+      const msg = encodeURIComponent(`Você foi convidado para uma reunião na Câmara de Iperó. Clique no link para entrar: ${linkSala}`);
       document.getElementById('btn-whatsapp').href = `https://wa.me/?text=${msg}`;
 
       // Inicia Jitsi
@@ -252,8 +252,8 @@
 
     // Botão email
     document.getElementById('btn-email').addEventListener('click', () => {
-      const subject = encodeURIComponent('Convite para reunião na CâmaraGest');
-      const body = encodeURIComponent(`Olá,\n\nVocê foi convidado para uma reunião online na plataforma CâmaraGest.\n\nLink da sala: ${linkSala}\n\nBasta clicar no link no horário marcado. Não precisa instalar nada.\n\nAtenciosamente,\n${user.nome}`);
+      const subject = encodeURIComponent('Convite para reunião na Câmara de Iperó');
+      const body = encodeURIComponent(`Olá,\n\nVocê foi convidado para uma reunião online na plataforma Câmara de Iperó.\n\nLink da sala: ${linkSala}\n\nBasta clicar no link no horário marcado. Não precisa instalar nada.\n\nAtenciosamente,\n${user.nome}`);
       location.href = `mailto:?subject=${subject}&body=${body}`;
     });
 

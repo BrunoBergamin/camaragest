@@ -1,4 +1,4 @@
-// CâmaraGest: Helpers de UI (toast, modal, navbar)
+// Câmara de Iperó: Helpers de UI (toast, modal, navbar)
 
 window.UI = {
   toast(msg, type = 'info', duration = 3000) {
@@ -57,7 +57,7 @@ window.UI = {
       <nav class="app-navbar">
         <a href="dashboard.html" class="nav-brand">
           <span style="font-size: 1.4rem;">🏛️</span>
-          <span>CâmaraGest</span>
+          <span>Câmara de Iperó</span>
         </a>
         <div class="nav-links">
           <a href="dashboard.html" class="nav-link ${active === 'dashboard' ? 'active' : ''}">Dashboard</a>
