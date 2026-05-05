@@ -55,9 +55,8 @@ window.UI = {
     return `
       ${banner}
       <nav class="app-navbar">
-        <a href="dashboard.html" class="nav-brand">
-          <span style="font-size: 1.4rem;">🏛️</span>
-          <span>Câmara de Iperó</span>
+        <a href="dashboard.html" class="nav-brand" style="background: white; padding: 0.3rem 0.7rem; border-radius: 0.5rem;">
+          <img src="../assets/images/logo-ipero.jpg" alt="Câmara de Iperó" style="height: 32px; width: auto; display: block;">
         </a>
         <div class="nav-links">
           <a href="dashboard.html" class="nav-link ${active === 'dashboard' ? 'active' : ''}">Dashboard</a>
