@@ -62,7 +62,7 @@ window.UI = {
           <a href="dashboard.html" class="nav-link ${active === 'dashboard' ? 'active' : ''}">Dashboard</a>
           <a href="tarefas.html" class="nav-link ${active === 'tarefas' ? 'active' : ''}">Tarefas</a>
           <a href="relatorios.html" class="nav-link ${active === 'relatorios' ? 'active' : ''}">Relatórios</a>
-          <a href="reuniao.html" class="nav-link ${active === 'reuniao' ? 'active' : ''}" title="Videochamada">🎥 Reunião</a>
+          <a href="reuniao.html" class="nav-link ${active === 'reuniao' ? 'active' : ''}" title="Videochamada">Reunião</a>
           <a href="perfil.html" class="nav-link ${active === 'perfil' ? 'active' : ''}">Meu perfil</a>
           ${adminLink}
         </div>
