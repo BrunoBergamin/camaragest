@@ -7,80 +7,177 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="../assets/css/styles.css" />
+  <style>
+    .step-number {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.05rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px -3px rgba(15,81,50,0.4);
+    }
+    .pulse-ring {
+      position: relative;
+    }
+    .pulse-ring::before {
+      content: ''; position: absolute; inset: -4px;
+      border-radius: 50%; border: 3px solid #FFD700;
+      animation: pulse-ring 2s infinite;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+    #jitsi-container { display: none; }
+    .live-indicator {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.25rem 0.7rem; border-radius: 999px;
+      background: #fee2e2; color: #991b1b;
+      font-size: 0.75rem; font-weight: 700;
+    }
+    .live-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #dc2626; animation: blink 1.5s infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0.3; }
+    }
+  </style>
 </head>
 <body>
 
   <div id="navbar"></div>
 
   <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <header class="flex items-center justify-between mb-4 flex-wrap gap-3">
-      <div>
-        <a href="dashboard.html" class="text-sm hover:underline mb-2 inline-block" style="color: var(--primary);">← Voltar ao dashboard</a>
-        <h1 class="text-2xl font-bold text-gray-900">🎥 Reunião online</h1>
-        <p class="text-gray-500 text-sm">Sala: <span id="salaNome" class="font-semibold"></span></p>
-      </div>
-      <div class="flex gap-2">
-        <button id="btnCopiarLink" class="btn btn-outline btn-sm">🔗 Copiar link</button>
-        <button id="btnNovaSala" class="btn btn-ghost btn-sm">+ Nova sala</button>
-      </div>
-    </header>
 
-    <!-- Card informativo -->
-    <div class="card mb-4" style="background: #fff3cd; border-color: #FFD700;">
-      <div class="flex items-start gap-3">
-        <div class="text-2xl">💡</div>
-        <div class="text-sm">
-          <strong>Reunião integrada à plataforma.</strong> Sem instalar nada, sem Zoom, sem WhatsApp.
-          Compartilhe o link acima com vereadores e participantes. Eles entram pelo navegador.
-          Suporta áudio HD, vídeo, compartilhamento de tela e chat.
+    <!-- ESTADO 1: Pré-sala (explicação + botão entrar) -->
+    <section id="pre-sala">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 pulse-ring" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); font-size: 2.5rem;">
+          🎥
+        </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">Reunião por vídeo</h1>
+        <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+          Faça reuniões da Câmara pela internet, igual uma chamada de vídeo do WhatsApp, mas dentro da plataforma. Os outros participantes entram pelo celular ou computador, sem precisar baixar nada.
+        </p>
+      </div>
+
+      <!-- Como funciona em 3 passos -->
+      <div class="card p-6 md:p-8 mb-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-6 text-center">Como funciona</h2>
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="text-center">
+            <div class="step-number mx-auto mb-3">1</div>
+            <h3 class="font-bold text-gray-900 mb-2">Você inicia a reunião</h3>
+            <p class="text-sm text-gray-600">Aperta o botão lá em baixo e a câmera abre. Aparece sua imagem na tela, igual selfie.</p>
+          </div>
+          <div class="text-center">
+            <div class="step-number mx-auto mb-3">2</div>
+            <h3 class="font-bold text-gray-900 mb-2">Manda o link pros outros</h3>
+            <p class="text-sm text-gray-600">A plataforma gera um endereço da reunião. Você manda no grupo do WhatsApp dos vereadores.</p>
+          </div>
+          <div class="text-center">
+            <div class="step-number mx-auto mb-3">3</div>
+            <h3 class="font-bold text-gray-900 mb-2">Eles entram e pronto</h3>
+            <p class="text-sm text-gray-600">Cada um clica no link e entra na reunião. Ninguém precisa baixar programa nem se cadastrar.</p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Container da videochamada -->
-    <div id="jitsi-container" class="card p-0 overflow-hidden" style="height: 600px; background: #1a1a1a;"></div>
+      <!-- O que dá pra fazer -->
+      <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="card">
+          <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2">✅ O que dá pra fazer</h3>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li class="flex gap-2"><span style="color: var(--primary);">▸</span> Ver e falar com todos ao mesmo tempo, igual chamada de vídeo</li>
+            <li class="flex gap-2"><span style="color: var(--primary);">▸</span> Mostrar sua tela pra todos (slide, documento, planilha)</li>
+            <li class="flex gap-2"><span style="color: var(--primary);">▸</span> Mandar mensagem escrita durante a reunião</li>
+            <li class="flex gap-2"><span style="color: var(--primary);">▸</span> Levantar a mão pra pedir a palavra</li>
+            <li class="flex gap-2"><span style="color: var(--primary);">▸</span> Gravar a reunião pra deixar guardada</li>
+            <li class="flex gap-2"><span style="color: var(--primary);">▸</span> Até 50 pessoas conectadas ao mesmo tempo</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2">📌 Quando usar na Câmara</h3>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li class="flex gap-2"><span style="color: var(--primary);">▸</span> <strong>Sessões à distância</strong>, quando algum vereador não pode ir presencialmente</li>
+            <li class="flex gap-2"><span style="color: var(--primary);">▸</span> <strong>Reuniões de comissão</strong> sem precisar marcar deslocamento</li>
+            <li class="flex gap-2"><span style="color: var(--primary);">▸</span> <strong>Audiências com a população</strong>, o cidadão participa de casa</li>
+            <li class="flex gap-2"><span style="color: var(--primary);">▸</span> <strong>Conversas com a equipe</strong> do gabinete</li>
+            <li class="flex gap-2"><span style="color: var(--primary);">▸</span> <strong>Receber convidados</strong> (autoridades, especialistas) por vídeo</li>
+          </ul>
+        </div>
+      </div>
 
-    <!-- Recursos da reunião -->
-    <section class="grid md:grid-cols-3 gap-4 mt-6">
-      <div class="card text-center">
-        <div class="text-3xl mb-2">🎙️</div>
-        <h4 class="font-semibold mb-1">Áudio HD</h4>
-        <p class="text-xs text-gray-500">Cancelamento de ruído automático</p>
-      </div>
-      <div class="card text-center">
-        <div class="text-3xl mb-2">🖥️</div>
-        <h4 class="font-semibold mb-1">Compartilhamento de tela</h4>
-        <p class="text-xs text-gray-500">Apresentações e documentos</p>
-      </div>
-      <div class="card text-center">
-        <div class="text-3xl mb-2">💬</div>
-        <h4 class="font-semibold mb-1">Chat e enquetes</h4>
-        <p class="text-xs text-gray-500">Votação rápida em sessões</p>
+      <!-- Botão grande para iniciar -->
+      <div class="card text-center p-8" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white;">
+        <h2 class="text-2xl font-bold mb-2 text-white">Vamos começar?</h2>
+        <p class="text-white/85 mb-5">É rapidinho. A reunião abre na hora e você pode encerrar quando quiser.</p>
+        <button id="btn-iniciar" class="btn btn-accent btn-lg btn-shine pulse" style="font-size: 1.05rem; padding: 1rem 2.5rem;">
+          🎬 Iniciar reunião agora
+        </button>
+        <p class="text-white/60 text-xs mt-4">
+          Quando você apertar, vai aparecer uma janelinha pedindo pra usar a câmera e o microfone. Pode aceitar tranquilo, é o normal.
+        </p>
       </div>
     </section>
 
-    <!-- Casos de uso -->
-    <section class="mt-8">
-      <h2 class="font-bold text-lg mb-4">Como sua Câmara pode usar</h2>
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="card">
-          <h4 class="font-semibold mb-2">🏛️ Sessões remotas e híbridas</h4>
-          <p class="text-sm text-gray-600">Permitido pela Lei 14.030/2020. Vereadores participam de qualquer lugar.</p>
+    <!-- ESTADO 2: Reunião ativa -->
+    <section id="reuniao-ativa" class="hidden">
+      <header class="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <span class="live-indicator">
+            <span class="live-dot"></span>
+            AO VIVO
+          </span>
+          <div>
+            <h1 class="text-xl font-bold text-gray-900">Sala de reunião</h1>
+            <p class="text-xs text-gray-500" id="sala-info"></p>
+          </div>
         </div>
-        <div class="card">
-          <h4 class="font-semibold mb-2">👥 Reuniões de comissão</h4>
-          <p class="text-sm text-gray-600">Comissões temáticas se reúnem sem precisar deslocamento.</p>
+        <button id="btn-encerrar" class="btn btn-danger btn-sm">📞 Encerrar reunião</button>
+      </header>
+
+      <div class="grid lg:grid-cols-3 gap-4">
+        <!-- Container Jitsi -->
+        <div class="lg:col-span-2">
+          <div id="jitsi-container" class="card p-0 overflow-hidden" style="height: 560px; background: #1a1a1a;"></div>
         </div>
-        <div class="card">
-          <h4 class="font-semibold mb-2">📢 Audiências públicas online</h4>
-          <p class="text-sm text-gray-600">Cidadão participa de qualquer lugar, mais participação democrática.</p>
-        </div>
-        <div class="card">
-          <h4 class="font-semibold mb-2">💼 Reuniões de gabinete</h4>
-          <p class="text-sm text-gray-600">Equipe do mandato alinhada, com gravação opcional para arquivo.</p>
-        </div>
+
+        <!-- Painel lateral: convidar + dicas -->
+        <aside class="space-y-4">
+          <!-- Convidar -->
+          <div class="card">
+            <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2">📨 Chame as pessoas</h3>
+            <p class="text-sm text-gray-600 mb-3">Manda esse link para quem você quer na reunião. Eles clicam e entram, simples assim.</p>
+
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3 break-all text-xs font-mono text-gray-700" id="link-da-sala"></div>
+
+            <div class="grid grid-cols-2 gap-2 mb-2">
+              <button id="btn-copiar" class="btn btn-primary btn-sm justify-center">📋 Copiar link</button>
+              <a id="btn-whatsapp" href="#" target="_blank" class="btn btn-sm justify-center" style="background: #25D366; color: white;">📱 WhatsApp</a>
+            </div>
+            <button id="btn-email" class="btn btn-outline btn-sm w-full justify-center">✉️ Mandar por email</button>
+          </div>
+
+          <!-- Dicas durante a reunião -->
+          <div class="card" style="background: #fff8e1; border-color: #FFD700;">
+            <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">💡 Durante a reunião</h3>
+            <ul class="space-y-1.5 text-sm text-gray-700">
+              <li>📷 Os botões ficam embaixo da tela do vídeo</li>
+              <li>🎙️ Pra ficar sem som, é só clicar no microfone</li>
+              <li>🖥️ Pra mostrar sua tela, clica no ícone do monitor</li>
+              <li>💬 Pra escrever mensagem, clica no balãozinho</li>
+              <li>✋ Pra pedir a palavra, clica na mão</li>
+              <li>📞 Pra sair, clica no telefone vermelho</li>
+            </ul>
+          </div>
+        </aside>
       </div>
     </section>
+
   </main>
 
   <script src="../assets/js/data.js"></script>
@@ -92,7 +189,7 @@
     const user = Auth.current();
     document.getElementById('navbar').innerHTML = UI.renderAppNavbar('reuniao');
 
-    // Sala: prioriza URL param (vinda da tarefa), senão usa sessionStorage, senão gera nova
+    // Define nome da sala (URL param ou gera novo)
     const params = new URLSearchParams(location.search);
     let sala = params.get('sala');
     if (!sala) {
@@ -104,45 +201,70 @@
     } else {
       sessionStorage.setItem('camaragest_sala', sala);
     }
-    document.getElementById('salaNome').textContent = sala;
 
-    // Iniciar Jitsi
-    const domain = 'meet.jit.si';
-    const options = {
-      roomName: sala,
-      width: '100%',
-      height: '100%',
-      parentNode: document.getElementById('jitsi-container'),
-      userInfo: {
-        displayName: user.nome,
-        email: user.email
-      },
-      configOverwrite: {
-        prejoinPageEnabled: false,
-        startWithAudioMuted: true,
-        startWithVideoMuted: false
-      },
-      interfaceConfigOverwrite: {
-        SHOW_JITSI_WATERMARK: false,
-        SHOW_WATERMARK_FOR_GUESTS: false,
-        DEFAULT_BACKGROUND: '#0F5132'
-      }
-    };
-    const api = new JitsiMeetExternalAPI(domain, options);
+    const linkSala = `https://meet.jit.si/${sala}`;
+    let api = null;
 
-    // Botões
-    document.getElementById('btnCopiarLink').addEventListener('click', () => {
-      const link = `https://meet.jit.si/${sala}`;
-      navigator.clipboard.writeText(link).then(() => {
-        UI.toast('Link copiado! Compartilhe com os participantes.', 'success', 3000);
+    // Botão iniciar reunião
+    document.getElementById('btn-iniciar').addEventListener('click', () => {
+      // Esconde pré-sala, mostra reunião
+      document.getElementById('pre-sala').classList.add('hidden');
+      document.getElementById('reuniao-ativa').classList.remove('hidden');
+      document.getElementById('jitsi-container').style.display = 'block';
+      document.getElementById('sala-info').textContent = `Sala: ${sala}`;
+      document.getElementById('link-da-sala').textContent = linkSala;
+
+      // Configura links de compartilhamento
+      const msg = encodeURIComponent(`Você foi convidado para uma reunião na CâmaraGest. Clique no link para entrar: ${linkSala}`);
+      document.getElementById('btn-whatsapp').href = `https://wa.me/?text=${msg}`;
+
+      // Inicia Jitsi
+      api = new JitsiMeetExternalAPI('meet.jit.si', {
+        roomName: sala,
+        width: '100%',
+        height: '100%',
+        parentNode: document.getElementById('jitsi-container'),
+        userInfo: {
+          displayName: user.nome,
+          email: user.email
+        },
+        configOverwrite: {
+          prejoinPageEnabled: false,
+          startWithAudioMuted: true,
+          startWithVideoMuted: false
+        },
+        interfaceConfigOverwrite: {
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_WATERMARK_FOR_GUESTS: false,
+          DEFAULT_BACKGROUND: '#0F5132'
+        }
+      });
+
+      UI.toast('Reunião iniciada! Compartilhe o link com os participantes.', 'success', 4000);
+    });
+
+    // Botão copiar
+    document.getElementById('btn-copiar').addEventListener('click', () => {
+      navigator.clipboard.writeText(linkSala).then(() => {
+        UI.toast('Link copiado! Cole no WhatsApp ou email.', 'success', 3000);
       });
     });
 
-    document.getElementById('btnNovaSala').addEventListener('click', () => {
-      if (confirm('Criar nova sala? A atual será encerrada.')) {
-        sessionStorage.removeItem('camaragest_sala');
-        location.reload();
-      }
+    // Botão email
+    document.getElementById('btn-email').addEventListener('click', () => {
+      const subject = encodeURIComponent('Convite para reunião na CâmaraGest');
+      const body = encodeURIComponent(`Olá,\n\nVocê foi convidado para uma reunião online na plataforma CâmaraGest.\n\nLink da sala: ${linkSala}\n\nBasta clicar no link no horário marcado. Não precisa instalar nada.\n\nAtenciosamente,\n${user.nome}`);
+      location.href = `mailto:?subject=${subject}&body=${body}`;
+    });
+
+    // Botão encerrar
+    document.getElementById('btn-encerrar').addEventListener('click', () => {
+      if (!confirm('Tem certeza que deseja encerrar a reunião?')) return;
+      if (api) { api.dispose(); api = null; }
+      sessionStorage.removeItem('camaragest_sala');
+      document.getElementById('reuniao-ativa').classList.add('hidden');
+      document.getElementById('pre-sala').classList.remove('hidden');
+      UI.toast('Reunião encerrada.', 'info');
     });
   </script>
 </body>
