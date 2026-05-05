@@ -8,6 +8,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="../assets/css/themes.css" />
+  <script src="../assets/js/themes.js"></script>
   <style>
     /* Header VIP */
     .hero-greeting {
@@ -87,7 +89,7 @@
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
     <!-- HEADER VIP PERSONALIZADO -->
-    <section class="hero-greeting mb-6 fade-in">
+    <section class="hero-greeting mb-4 fade-in">
       <div class="relative" style="z-index: 2;">
         <div class="flex items-center gap-4 flex-wrap">
           <div class="vip-avatar flex-shrink-0">
@@ -104,6 +106,20 @@
             <div class="text-white/70 text-xs" id="vipDayName"></div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- FRASE MOTIVACIONAL DO DIA -->
+    <section class="mb-6 fade-in">
+      <div class="card relative overflow-hidden" style="background: linear-gradient(135deg, #fff 0%, #fff8e1 100%); border-left: 5px solid #FFD700;">
+        <div class="flex items-start gap-4">
+          <div class="flex-shrink-0 text-4xl" style="color: #FFD700; line-height: 1;">"</div>
+          <div class="flex-1">
+            <p class="text-gray-800 text-base md:text-lg italic leading-relaxed font-medium" id="fraseTexto"></p>
+            <p class="text-xs text-gray-500 mt-2 font-semibold tracking-wide" id="fraseAutor"></p>
+          </div>
+        </div>
+        <div style="position: absolute; bottom: -20px; right: -20px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%); pointer-events: none;"></div>
       </div>
     </section>
 
@@ -194,6 +210,7 @@
   <script src="../assets/js/data.js"></script>
   <script src="../assets/js/auth-mock.js"></script>
   <script src="../assets/js/ui.js"></script>
+  <script src="../assets/js/frases.js"></script>
   <script>
     if (!Auth.requireAuth()) throw new Error('redirecting');
     const user = Auth.current();
@@ -214,6 +231,11 @@
     const data = new Date();
     document.getElementById('vipDate').textContent = data.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
     document.getElementById('vipDayName').textContent = data.toLocaleDateString('pt-BR', { weekday: 'long' });
+
+    // === FRASE MOTIVACIONAL DO DIA ===
+    const frase = getFraseDoDia();
+    document.getElementById('fraseTexto').textContent = frase.texto;
+    document.getElementById('fraseAutor').textContent = '— ' + frase.autor;
 
     // === PERMISSÃO ===
     const tarefasVisiveis = user.isAdmin
