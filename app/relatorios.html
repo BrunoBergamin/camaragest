@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatórios - CâmaraGest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <header class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Relatórios</h1>
+        <p class="text-gray-500 text-sm">Projetos, situações da cidade e ações documentadas</p>
+      </div>
+      <button id="btnNovo" class="btn btn-primary btn-sm">+ Novo relatório</button>
+    </header>
+
+    <!-- Filtros -->
+    <section class="card mb-6">
+      <div class="grid md:grid-cols-3 gap-3">
+        <div>
+          <label class="form-label">Buscar</label>
+          <input id="filtroBusca" class="form-input" placeholder="Título...">
+        </div>
+        <div>
+          <label class="form-label">Categoria</label>
+          <select id="filtroCat" class="form-select">
+            <option value="">Todas</option>
+            <option value="projeto">Projeto</option>
+            <option value="situacao_cidade">Situação da cidade</option>
+            <option value="evento">Evento</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Autor</label>
+          <select id="filtroAutor" class="form-select">
+            <option value="">Todos</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section id="grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-5"></section>
+  </main>
+
+  <script src="../assets/js/data.js"></script>
+  <script src="../assets/js/auth-mock.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script>
+    if (!Auth.requireAuth()) throw new Error('redirecting');
+    const user = Auth.current();
+    document.getElementById('navbar').innerHTML = UI.renderAppNavbar('relatorios');
+
+    let relatorios = JSON.parse(JSON.stringify(MOCK_DATA.relatorios));
+
+    const selAutor = document.getElementById('filtroAutor');
+    MOCK_DATA.vereadores.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = v.nome.split(' ').slice(0,2).join(' ');
+      selAutor.appendChild(opt);
+    });
+
+    ['filtroBusca','filtroCat','filtroAutor'].forEach(id =>
+      document.getElementById(id).addEventListener('input', render)
+    );
+
+    function render() {
+      const busca = document.getElementById('filtroBusca').value.toLowerCase();
+      const cat = document.getElementById('filtroCat').value;
+      const autor = document.getElementById('filtroAutor').value;
+      const lista = relatorios.filter(r =>
+        (!busca || r.titulo.toLowerCase().includes(busca) || r.descricao.toLowerCase().includes(busca)) &&
+        (!cat || r.categoria === cat) &&
+        (!autor || r.autorId === autor)
+      ).sort((a,b) => b.criadoEm.localeCompare(a.criadoEm));
+
+      document.getElementById('grid').innerHTML = lista.map(r => {
+        const a = getVereador(r.autorId);
+        return `
+          <a href="relatorio.html?id=${r.id}" class="card p-0 overflow-hidden hover:scale-[1.01] transition-transform" style="text-decoration: none; color: inherit;">
+            <div style="height: 180px; overflow: hidden; background: var(--primary-dark);">
+              <img src="${r.imagens[0]?.url}" alt="" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src=window.imgFallback;">
+            </div>
+            <div class="p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="badge badge-primary">${categoriaLabel(r.categoria)}</span>
+                <span class="text-xs text-gray-500">${fmtData(r.criadoEm)}</span>
+              </div>
+              <h3 class="font-bold mb-2 line-clamp-2 text-gray-900">${r.titulo}</h3>
+              <p class="text-sm text-gray-600 line-clamp-2 mb-3">${r.descricao}</p>
+              <div class="flex items-center gap-2 pt-3 border-t border-gray-100">
+                <img src="${a.foto}" class="w-7 h-7 rounded-full object-cover" alt="">
+                <span class="text-xs text-gray-600">${a.nome.split(' ').slice(0,2).join(' ')}</span>
+                <span class="ml-auto text-xs text-gray-400">📷 ${r.imagens.length}</span>
+              </div>
+            </div>
+          </a>
+        `;
+      }).join('') || '<p class="text-gray-500 col-span-full text-center py-8">Nenhum relatório encontrado.</p>';
+    }
+
+    document.getElementById('btnNovo').addEventListener('click', () => {
+      const m = UI.modal({
+        title: 'Novo relatório',
+        body: `
+          <form id="formNovo" class="space-y-3">
+            <div><label class="form-label">Título</label><input class="form-input" name="titulo" required placeholder="Ex: Visita à obra da nova UBS"></div>
+            <div><label class="form-label">Descrição</label><textarea class="form-textarea" name="descricao" rows="4" required placeholder="Detalhes sobre o projeto, situação ou ação..."></textarea></div>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="form-label">Categoria</label>
+                <select class="form-select" name="categoria">
+                  <option value="projeto">Projeto</option>
+                  <option value="situacao_cidade">Situação da cidade</option>
+                  <option value="evento">Evento</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+              <div><label class="form-label">Localização</label><input class="form-input" name="localizacao" placeholder="Bairro / Rua"></div>
+            </div>
+            <div>
+              <label class="form-label">Imagens</label>
+              <div class="border-2 border-dashed rounded-lg p-6 text-center text-gray-500 cursor-pointer hover:border-emerald-500" onclick="this.querySelector('input').click()">
+                <input type="file" multiple accept="image/*" class="hidden">
+                <div class="text-3xl mb-2">📷</div>
+                <p class="text-sm">Clique para selecionar imagens (mock, não envia de verdade)</p>
+              </div>
+            </div>
+          </form>
+        `,
+        footer: `
+          <button class="btn btn-ghost" data-close>Cancelar</button>
+          <button class="btn btn-primary" id="salvarR">Publicar relatório</button>
+        `
+      });
+      document.getElementById('salvarR').addEventListener('click', () => {
+        const f = document.getElementById('formNovo');
+        if (!f.checkValidity()) { f.reportValidity(); return; }
+        const d = Object.fromEntries(new FormData(f));
+        d.id = 'r' + Date.now();
+        d.autorId = user.id;
+        d.criadoEm = new Date().toISOString().slice(0,10);
+        // Imagem mockada (placeholder)
+        d.imagens = [{ url: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800', legenda: 'Imagem do relatório' }];
+        relatorios.unshift(d);
+        m.close();
+        UI.toast('Relatório publicado!', 'success');
+        render();
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>

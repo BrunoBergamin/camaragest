@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meu Perfil - CâmaraGest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <header class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Meu perfil</h1>
+      <p class="text-gray-500 text-sm">Gerencie suas informações públicas</p>
+    </header>
+
+    <form id="formPerfil" class="card">
+      <div class="flex items-center gap-5 mb-6">
+        <div class="relative">
+          <img id="fotoPerfil" class="avatar avatar-xl" alt="">
+          <label class="absolute bottom-0 right-0 w-9 h-9 rounded-full flex items-center justify-center cursor-pointer text-white shadow-lg" style="background: var(--primary);">
+            📷
+            <input type="file" accept="image/*" class="hidden" id="inputFoto">
+          </label>
+        </div>
+        <div>
+          <h2 id="nomeAtual" class="font-bold text-lg"></h2>
+          <p id="cargoAtual" class="text-gray-500 text-sm"></p>
+          <p class="text-xs text-gray-400 mt-1">Clique no ícone para trocar a foto</p>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div><label class="form-label">Nome completo</label><input class="form-input" name="nome" required></div>
+        <div><label class="form-label">Cargo</label><input class="form-input" name="cargo" required></div>
+        <div><label class="form-label">Partido</label><input class="form-input" name="partido"></div>
+        <div><label class="form-label">Telefone</label><input class="form-input" name="telefone" placeholder="(15) 99999-9999"></div>
+        <div class="md:col-span-2"><label class="form-label">Email</label><input class="form-input" name="email" type="email" readonly style="background: var(--surface-alt);"></div>
+        <div class="md:col-span-2"><label class="form-label">Bio / Apresentação</label><textarea class="form-textarea" name="bio" rows="4" placeholder="Conte sobre seu mandato, áreas de atuação..."></textarea></div>
+      </div>
+
+      <div class="flex justify-end gap-2 mt-6 pt-6 border-t border-gray-100">
+        <button type="button" class="btn btn-ghost" onclick="location.reload()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar alterações</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="../assets/js/data.js"></script>
+  <script src="../assets/js/auth-mock.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script>
+    if (!Auth.requireAuth()) throw new Error('redirecting');
+    const user = Auth.current();
+    document.getElementById('navbar').innerHTML = UI.renderAppNavbar('perfil');
+
+    document.getElementById('fotoPerfil').src = user.foto;
+    document.getElementById('nomeAtual').textContent = user.nome;
+    document.getElementById('cargoAtual').textContent = `${user.cargo},${user.partido}`;
+
+    const f = document.getElementById('formPerfil');
+    f.nome.value = user.nome;
+    f.cargo.value = user.cargo;
+    f.partido.value = user.partido || '';
+    f.telefone.value = user.telefone || '';
+    f.email.value = user.email;
+    f.bio.value = user.bio || '';
+
+    document.getElementById('inputFoto').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        document.getElementById('fotoPerfil').src = ev.target.result;
+        user.foto = ev.target.result;
+        UI.toast('Foto carregada (será salva ao confirmar)', 'info', 2500);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    f.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(f));
+      const updated = { ...user, ...data };
+      localStorage.setItem('camaragest_user', JSON.stringify(updated));
+      // Atualiza também no MOCK_DATA em memória
+      const v = MOCK_DATA.vereadores.find(x => x.id === user.id);
+      if (v) Object.assign(v, updated);
+      UI.toast('Perfil atualizado com sucesso!', 'success');
+      document.getElementById('nomeAtual').textContent = updated.nome;
+      document.getElementById('cargoAtual').textContent = `${updated.cargo},${updated.partido || ''}`;
+    });
+  </script>
+</body>
+</html>

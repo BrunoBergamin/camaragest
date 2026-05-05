@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tarefas - CâmaraGest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <header class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Tarefas</h1>
+        <p class="text-gray-500 text-sm">Gerencie demandas e acompanhe prazos</p>
+      </div>
+      <div class="flex gap-2">
+        <div class="flex rounded overflow-hidden border border-gray-200">
+          <button id="btnLista" class="btn btn-sm" style="border-radius: 0;">📋 Lista</button>
+          <button id="btnKanban" class="btn btn-ghost btn-sm" style="border-radius: 0;">🗂️ Kanban</button>
+        </div>
+        <button id="btnNova" class="btn btn-primary btn-sm">+ Nova tarefa</button>
+      </div>
+    </header>
+
+    <!-- Filtros -->
+    <section class="card mb-6">
+      <div class="grid md:grid-cols-4 gap-3">
+        <div>
+          <label class="form-label">Buscar</label>
+          <input id="filtroBusca" class="form-input" placeholder="Título ou descrição...">
+        </div>
+        <div>
+          <label class="form-label">Responsável</label>
+          <select id="filtroResp" class="form-select">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Prioridade</label>
+          <select id="filtroPri" class="form-select">
+            <option value="">Todas</option>
+            <option value="alta">Alta</option>
+            <option value="media">Média</option>
+            <option value="baixa">Baixa</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Status</label>
+          <select id="filtroStatus" class="form-select">
+            <option value="">Todos</option>
+            <option value="pendente">Pendente</option>
+            <option value="em_andamento">Em andamento</option>
+            <option value="concluida">Concluída</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Vista lista -->
+    <section id="vistaLista" class="card overflow-hidden p-0">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+          <tr>
+            <th class="text-left p-3">Tarefa</th>
+            <th class="text-left p-3 hide-mobile">Responsável</th>
+            <th class="text-left p-3 hide-mobile">Prazo</th>
+            <th class="text-left p-3">Prioridade</th>
+            <th class="text-left p-3">Status</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyTarefas"></tbody>
+      </table>
+    </section>
+
+    <!-- Vista Kanban -->
+    <section id="vistaKanban" class="hidden grid md:grid-cols-3 gap-4">
+      <div class="kanban-col">
+        <h4>📌 Pendente <span class="badge badge-muted" id="countPendente">0</span></h4>
+        <div id="colPendente"></div>
+      </div>
+      <div class="kanban-col">
+        <h4>⏳ Em andamento <span class="badge badge-warning" id="countAndamento">0</span></h4>
+        <div id="colAndamento"></div>
+      </div>
+      <div class="kanban-col">
+        <h4>✅ Concluída <span class="badge badge-success" id="countConcluida">0</span></h4>
+        <div id="colConcluida"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../assets/js/data.js"></script>
+  <script src="../assets/js/auth-mock.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script>
+    if (!Auth.requireAuth()) throw new Error('redirecting');
+    const user = Auth.current();
+    document.getElementById('navbar').innerHTML = UI.renderAppNavbar('tarefas');
+
+    // Trabalha numa cópia para que mudanças (status) sejam refletidas em memória
+    let tarefas = JSON.parse(JSON.stringify(MOCK_DATA.tarefas));
+
+    // Popula filtro de responsável
+    const selResp = document.getElementById('filtroResp');
+    MOCK_DATA.vereadores.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = v.nome;
+      selResp.appendChild(opt);
+    });
+
+    // Filtros
+    let modo = 'lista';
+    document.getElementById('btnLista').addEventListener('click', () => switchModo('lista'));
+    document.getElementById('btnKanban').addEventListener('click', () => switchModo('kanban'));
+    ['filtroBusca','filtroResp','filtroPri','filtroStatus'].forEach(id =>
+      document.getElementById(id).addEventListener('input', render)
+    );
+
+    function switchModo(m) {
+      modo = m;
+      document.getElementById('vistaLista').classList.toggle('hidden', m !== 'lista');
+      document.getElementById('vistaKanban').classList.toggle('hidden', m !== 'kanban');
+      document.getElementById('btnLista').className = 'btn btn-sm ' + (m === 'lista' ? '' : 'btn-ghost');
+      document.getElementById('btnKanban').className = 'btn btn-sm ' + (m === 'kanban' ? '' : 'btn-ghost');
+      document.getElementById('btnLista').style.borderRadius = '0';
+      document.getElementById('btnKanban').style.borderRadius = '0';
+      render();
+    }
+
+    function getFiltradas() {
+      const busca = document.getElementById('filtroBusca').value.toLowerCase();
+      const resp = document.getElementById('filtroResp').value;
+      const pri = document.getElementById('filtroPri').value;
+      const status = document.getElementById('filtroStatus').value;
+      return tarefas.filter(t => {
+        if (busca && !(t.titulo.toLowerCase().includes(busca) || t.descricao.toLowerCase().includes(busca))) return false;
+        if (resp && t.responsavelId !== resp) return false;
+        if (pri && t.prioridade !== pri) return false;
+        if (status && t.status !== status) return false;
+        return true;
+      });
+    }
+
+    function render() {
+      const lista = getFiltradas();
+      if (modo === 'lista') {
+        document.getElementById('tbodyTarefas').innerHTML = lista.map(t => {
+          const r = getVereador(t.responsavelId);
+          const vencida = new Date(t.prazo) < new Date(new Date().toDateString()) && t.status !== 'concluida';
+          return `
+            <tr class="border-t border-gray-100 hover:bg-gray-50">
+              <td class="p-3">
+                <div class="font-semibold flex items-center gap-2 text-gray-900">
+                  ${t.videochamada ? '<span title="Reunião por videochamada" style="font-size: 1rem;">🎥</span>' : ''}
+                  ${t.titulo}
+                </div>
+                <div class="text-xs text-gray-500 line-clamp-1">${t.descricao}</div>
+                ${t.videochamada ? `<a href="reuniao.html?sala=${encodeURIComponent(t.salaJitsi)}" class="text-xs font-semibold inline-flex items-center gap-1 mt-1" style="color: var(--primary);">▶ Entrar na reunião</a>` : ''}
+              </td>
+              <td class="p-3 hide-mobile">
+                <div class="flex items-center gap-2">
+                  <img src="${r.foto}" class="w-7 h-7 rounded-full object-cover" alt="">
+                  <span class="text-xs">${r.nome.split(' ').slice(0,2).join(' ')}</span>
+                </div>
+              </td>
+              <td class="p-3 hide-mobile">
+                <span class="${vencida ? 'text-red-600 font-semibold' : ''}">${fmtData(t.prazo)}${vencida ? ' ⚠' : ''}</span>
+              </td>
+              <td class="p-3"><span class="badge ${prioridadeBadge(t.prioridade)}">${prioridadeLabel(t.prioridade)}</span></td>
+              <td class="p-3">
+                <select class="form-select" style="padding: 0.3rem; font-size: 0.8rem;" onchange="mudarStatus('${t.id}', this.value)">
+                  <option value="pendente" ${t.status === 'pendente' ? 'selected' : ''}>Pendente</option>
+                  <option value="em_andamento" ${t.status === 'em_andamento' ? 'selected' : ''}>Em andamento</option>
+                  <option value="concluida" ${t.status === 'concluida' ? 'selected' : ''}>Concluída</option>
+                </select>
+              </td>
+            </tr>
+          `;
+        }).join('') || '<tr><td colspan="5" class="p-6 text-center text-gray-500">Nenhuma tarefa encontrada.</td></tr>';
+      } else {
+        // Kanban
+        ['pendente','em_andamento','concluida'].forEach(s => {
+          const col = lista.filter(t => t.status === s);
+          const id = s === 'em_andamento' ? 'Andamento' : s.charAt(0).toUpperCase() + s.slice(1);
+          document.getElementById(`count${id}`).textContent = col.length;
+          document.getElementById(`col${id}`).innerHTML = col.map(t => {
+            const r = getVereador(t.responsavelId);
+            return `
+              <div class="kanban-card priority-${t.prioridade}" onclick="abrirTarefa('${t.id}')">
+                <div class="font-semibold text-sm mb-1 flex items-center gap-2 text-gray-900">
+                  ${t.videochamada ? '<span title="Videochamada">🎥</span>' : ''}
+                  <span>${t.titulo}</span>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <div class="flex items-center gap-1">
+                    <img src="${r.foto}" class="w-5 h-5 rounded-full object-cover" alt="">
+                    <span class="text-xs text-gray-500">${r.nome.split(' ')[0]}</span>
+                  </div>
+                  <span class="text-xs text-gray-500">${fmtData(t.prazo)}</span>
+                </div>
+              </div>
+            `;
+          }).join('') || '<p class="text-gray-400 text-sm text-center py-4">|</p>';
+        });
+      }
+    }
+
+    window.mudarStatus = (id, novoStatus) => {
+      const t = tarefas.find(x => x.id === id);
+      if (t) { t.status = novoStatus; UI.toast('Status atualizado', 'success', 2000); render(); }
+    };
+
+    window.abrirTarefa = (id) => {
+      const t = tarefas.find(x => x.id === id);
+      const r = getVereador(t.responsavelId);
+      const reuniaoBox = t.videochamada ? `
+        <div class="card mt-4" style="background: #fff3cd; border-color: var(--accent);">
+          <div class="flex items-center gap-3">
+            <div class="text-3xl">🎥</div>
+            <div class="flex-1">
+              <strong>Reunião por videochamada</strong>
+              <p class="text-xs text-gray-600">Sala: ${t.salaJitsi}</p>
+            </div>
+            <a href="reuniao.html?sala=${encodeURIComponent(t.salaJitsi)}" class="btn btn-primary btn-sm">Entrar</a>
+          </div>
+        </div>
+      ` : '';
+      UI.modal({
+        title: t.titulo,
+        body: `
+          <p class="text-gray-600 mb-4">${t.descricao}</p>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div><strong>Responsável:</strong> ${r.nome}</div>
+            <div><strong>Prazo:</strong> ${fmtData(t.prazo)}</div>
+            <div><strong>Prioridade:</strong> <span class="badge ${prioridadeBadge(t.prioridade)}">${prioridadeLabel(t.prioridade)}</span></div>
+            <div><strong>Status:</strong> <span class="badge ${statusBadge(t.status)}">${statusLabel(t.status)}</span></div>
+          </div>
+          ${reuniaoBox}
+        `,
+        footer: `<button class="btn btn-ghost" data-close>Fechar</button>`
+      });
+    };
+
+    // Nova tarefa (admin)
+    document.getElementById('btnNova').addEventListener('click', () => {
+      if (!user.isAdmin) {
+        UI.toast('Apenas o presidente cria tarefas', 'warning');
+        return;
+      }
+      if (Auth.blockIfDemo('criar tarefa permanente')) {
+        // No demo, ainda criamos mas em memória só
+      }
+      const optsResp = MOCK_DATA.vereadores.map(v => `<option value="${v.id}">${v.nome}</option>`).join('');
+      const m = UI.modal({
+        title: 'Nova tarefa',
+        body: `
+          <form id="formNova" class="space-y-3">
+            <div><label class="form-label">Título</label><input class="form-input" name="titulo" required></div>
+            <div><label class="form-label">Descrição</label><textarea class="form-textarea" name="descricao" required></textarea></div>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="form-label">Responsável</label><select class="form-select" name="responsavelId" required>${optsResp}</select></div>
+              <div><label class="form-label">Prazo</label><input class="form-input" type="date" name="prazo" required></div>
+              <div><label class="form-label">Prioridade</label>
+                <select class="form-select" name="prioridade">
+                  <option value="baixa">Baixa</option>
+                  <option value="media" selected>Média</option>
+                  <option value="alta">Alta</option>
+                </select>
+              </div>
+              <div><label class="form-label">Status</label>
+                <select class="form-select" name="status">
+                  <option value="pendente" selected>Pendente</option>
+                  <option value="em_andamento">Em andamento</option>
+                </select>
+              </div>
+            </div>
+            <div class="card" style="background: #fff3cd; border-color: var(--accent);">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="videochamada" id="chkVideo" style="width: 1.1rem; height: 1.1rem;">
+                <div>
+                  <div class="font-semibold flex items-center gap-2">🎥 Reunião por videochamada</div>
+                  <p class="text-xs text-gray-600">Marque para gerar uma sala de reunião online (Jitsi). Vereadores poderão entrar com 1 clique.</p>
+                </div>
+              </label>
+            </div>
+          </form>
+        `,
+        footer: `
+          <button class="btn btn-ghost" data-close>Cancelar</button>
+          <button class="btn btn-primary" id="btnSalvarTarefa">Criar tarefa</button>
+        `
+      });
+      document.getElementById('btnSalvarTarefa').addEventListener('click', () => {
+        const f = document.getElementById('formNova');
+        if (!f.checkValidity()) { f.reportValidity(); return; }
+        const d = Object.fromEntries(new FormData(f));
+        d.id = 't' + Date.now();
+        d.criadorId = user.id;
+        d.criadaEm = new Date().toISOString().slice(0,10);
+        // Videochamada: gera sala única se marcado
+        if (document.getElementById('chkVideo').checked) {
+          d.videochamada = true;
+          d.salaJitsi = 'CamaraGest-' + d.titulo.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20) + '-' + Date.now().toString(36);
+          UI.toast('Tarefa criada com sala de videochamada!', 'success', 3500);
+        } else {
+          UI.toast('Tarefa criada!', 'success');
+        }
+        tarefas.unshift(d);
+        m.close();
+        render();
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel Administrativo - CâmaraGest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <header class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Painel administrativo</h1>
+        <p class="text-gray-500 text-sm">Gerencie a equipe da Câmara</p>
+      </div>
+      <button id="btnCadastrar" class="btn btn-primary">+ Cadastrar vereador</button>
+    </header>
+
+    <section class="grid md:grid-cols-3 gap-4 mb-6">
+      <div class="card metric-card green card-hover">
+        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Equipe ativa</div>
+        <div class="metric-value" id="totalAtivos">0</div>
+      </div>
+      <div class="card metric-card gold card-hover">
+        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Administradores</div>
+        <div class="metric-value gold" id="totalAdmin">0</div>
+      </div>
+      <div class="card metric-card blue card-hover">
+        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Total cadastrado</div>
+        <div class="metric-value" style="background: linear-gradient(135deg, #6b7280 0%, #1f2937 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="totalGeral">0</div>
+      </div>
+    </section>
+
+    <section class="card overflow-hidden p-0">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+          <tr>
+            <th class="text-left p-3">Vereador</th>
+            <th class="text-left p-3 hide-mobile">Cargo</th>
+            <th class="text-left p-3 hide-mobile">Email</th>
+            <th class="text-left p-3">Status</th>
+            <th class="text-right p-3">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyVer"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="../assets/js/data.js"></script>
+  <script src="../assets/js/auth-mock.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script>
+    if (!Auth.requireAuth()) throw new Error('redirecting');
+    if (!Auth.requireAdmin()) throw new Error('redirecting');
+    const user = Auth.current();
+    document.getElementById('navbar').innerHTML = UI.renderAppNavbar('admin');
+
+    let vereadores = JSON.parse(JSON.stringify(MOCK_DATA.vereadores));
+
+    function render() {
+      document.getElementById('totalAtivos').textContent = vereadores.filter(v => v.ativo).length;
+      document.getElementById('totalAdmin').textContent = vereadores.filter(v => v.isAdmin).length;
+      document.getElementById('totalGeral').textContent = vereadores.length;
+
+      document.getElementById('tbodyVer').innerHTML = vereadores.map(v => `
+        <tr class="border-t border-gray-100 hover:bg-gray-50">
+          <td class="p-3">
+            <div class="flex items-center gap-2">
+              <img src="${v.foto}" class="w-9 h-9 rounded-full" alt="">
+              <div>
+                <div class="font-semibold text-gray-900">${v.nome}</div>
+                <div class="text-xs text-gray-500">${v.partido}</div>
+              </div>
+            </div>
+          </td>
+          <td class="p-3 hide-mobile">
+            ${v.isAdmin ? '<span class="badge badge-accent">Presidente</span>' : `<span class="badge badge-primary">${v.cargo}</span>`}
+          </td>
+          <td class="p-3 hide-mobile text-gray-600">${v.email}</td>
+          <td class="p-3">
+            ${v.ativo ? '<span class="badge badge-success">Ativo</span>' : '<span class="badge badge-muted">Inativo</span>'}
+          </td>
+          <td class="p-3 text-right">
+            <button class="btn btn-sm btn-ghost" onclick="toggleAtivo('${v.id}')" ${v.id === user.id ? 'disabled title="Você mesmo não"' : ''}>
+              ${v.ativo ? 'Desativar' : 'Ativar'}
+            </button>
+            ${!v.isAdmin && v.id !== user.id ? `<button class="btn btn-sm btn-ghost" onclick="promover('${v.id}')">Tornar admin</button>` : ''}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    window.toggleAtivo = (id) => {
+      if (Auth.blockIfDemo('alterar status')) return;
+      const v = vereadores.find(x => x.id === id);
+      v.ativo = !v.ativo;
+      UI.toast(v.ativo ? 'Vereador ativado' : 'Vereador desativado', 'success');
+      render();
+    };
+
+    window.promover = (id) => {
+      if (Auth.blockIfDemo('alterar permissões')) return;
+      const v = vereadores.find(x => x.id === id);
+      v.isAdmin = true;
+      UI.toast(v.nome + ' agora é administrador', 'success');
+      render();
+    };
+
+    document.getElementById('btnCadastrar').addEventListener('click', () => {
+      const m = UI.modal({
+        title: 'Cadastrar novo vereador',
+        body: `
+          <p class="text-sm text-gray-500 mb-4">Um email de convite será enviado para que o vereador defina sua senha.</p>
+          <form id="formNovo" class="space-y-3">
+            <div><label class="form-label">Nome completo</label><input class="form-input" name="nome" required></div>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="form-label">Cargo</label>
+                <select class="form-select" name="cargo">
+                  <option>Vereador</option>
+                  <option>Vereadora</option>
+                </select>
+              </div>
+              <div><label class="form-label">Partido</label><input class="form-input" name="partido" required></div>
+            </div>
+            <div><label class="form-label">Email institucional</label><input class="form-input" type="email" name="email" required></div>
+            <div><label class="form-label">Telefone</label><input class="form-input" name="telefone" placeholder="(15) 99999-9999"></div>
+          </form>
+        `,
+        footer: `
+          <button class="btn btn-ghost" data-close>Cancelar</button>
+          <button class="btn btn-primary" id="salvarV">Enviar convite</button>
+        `
+      });
+      document.getElementById('salvarV').addEventListener('click', () => {
+        const f = document.getElementById('formNovo');
+        if (!f.checkValidity()) { f.reportValidity(); return; }
+        const d = Object.fromEntries(new FormData(f));
+        d.id = 'v' + Date.now();
+        d.foto = `https://i.pravatar.cc/300?u=${d.id}`;
+        d.bio = '';
+        d.isAdmin = false;
+        d.ativo = true;
+        vereadores.unshift(d);
+        m.close();
+        UI.toast('Convite enviado para ' + d.email, 'success', 4000);
+        render();
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>

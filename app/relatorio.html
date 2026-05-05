@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatório - CâmaraGest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+      <a href="relatorios.html" class="text-sm hover:underline" style="color: var(--primary);">← Voltar para relatórios</a>
+      <button id="btnPDF" class="btn btn-outline btn-sm">📄 Baixar PDF</button>
+    </div>
+    <article id="conteudo"></article>
+  </main>
+
+  <script src="../assets/js/data.js"></script>
+  <script src="../assets/js/auth-mock.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    if (!Auth.requireAuth()) throw new Error('redirecting');
+    document.getElementById('navbar').innerHTML = UI.renderAppNavbar('relatorios');
+
+    document.getElementById('btnPDF').addEventListener('click', () => {
+      const r = getRelatorio(new URLSearchParams(location.search).get('id'));
+      if (!r) return;
+      UI.toast('Gerando PDF...', 'info', 1500);
+      const opt = {
+        margin: [10, 10],
+        filename: `relatorio-${r.titulo.toLowerCase().replace(/\s+/g, '-').slice(0, 40)}.pdf`,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(document.getElementById('conteudo')).save();
+    });
+
+    const id = new URLSearchParams(location.search).get('id');
+    const r = getRelatorio(id);
+    if (!r) {
+      document.getElementById('conteudo').innerHTML = '<p class="text-gray-500">Relatório não encontrado.</p>';
+    } else {
+      const a = getVereador(r.autorId);
+      document.getElementById('conteudo').innerHTML = `
+        <header class="mb-6">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="badge badge-primary">${categoriaLabel(r.categoria)}</span>
+            <span class="text-sm text-gray-500">${fmtData(r.criadoEm)}</span>
+            ${r.localizacao ? `<span class="text-sm text-gray-500">📍 ${r.localizacao}</span>` : ''}
+          </div>
+          <h1 class="text-3xl font-bold mb-4 text-gray-900">${r.titulo}</h1>
+          <a href="vereador.html?id=${a.id}" class="flex items-center gap-3" style="text-decoration: none; color: inherit;">
+            <img src="${a.foto}" class="avatar" alt="">
+            <div>
+              <div class="font-semibold">${a.nome}</div>
+              <div class="text-sm text-gray-500">${a.cargo},${a.partido}</div>
+            </div>
+          </a>
+        </header>
+
+        <section class="card mb-6">
+          <p class="text-gray-700 leading-relaxed whitespace-pre-line">${r.descricao}</p>
+        </section>
+
+        <section>
+          <h2 class="font-bold text-lg mb-3">Galeria (${r.imagens.length} ${r.imagens.length === 1 ? 'imagem' : 'imagens'})</h2>
+          <div class="gallery-grid">
+            ${r.imagens.map(img => `
+              <div>
+                <img src="${img.url}" alt="${img.legenda}" onclick="abrirImg('${img.url}')" onerror="this.onerror=null; this.src=window.imgFallback;">
+                ${img.legenda ? `<p class="text-xs text-gray-500 mt-1">${img.legenda}</p>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    window.abrirImg = (url) => {
+      UI.modal({
+        title: 'Imagem',
+        body: `<img src="${url}" class="w-full rounded">`,
+        footer: '<button class="btn btn-ghost" data-close>Fechar</button>'
+      });
+    };
+  </script>
+</body>
+</html>

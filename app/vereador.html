@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vereador - CâmaraGest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <a href="dashboard.html" class="text-sm hover:underline mb-4 inline-block" style="color: var(--primary);">← Voltar</a>
+    <div id="conteudo"></div>
+  </main>
+
+  <script src="../assets/js/data.js"></script>
+  <script src="../assets/js/auth-mock.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script>
+    if (!Auth.requireAuth()) throw new Error('redirecting');
+    document.getElementById('navbar').innerHTML = UI.renderAppNavbar('');
+
+    const id = new URLSearchParams(location.search).get('id');
+    const v = getVereador(id);
+    if (!v) {
+      document.getElementById('conteudo').innerHTML = '<p class="text-gray-500">Vereador não encontrado.</p>';
+    } else {
+      const relatoriosVer = MOCK_DATA.relatorios.filter(r => r.autorId === v.id);
+      const tarefasVer = MOCK_DATA.tarefas.filter(t => t.responsavelId === v.id);
+      document.getElementById('conteudo').innerHTML = `
+        <section class="card mb-6">
+          <div class="flex flex-col md:flex-row gap-6 items-center md:items-start">
+            <img src="${v.foto}" class="avatar avatar-xl" alt="">
+            <div class="text-center md:text-left flex-1">
+              <div class="flex items-center gap-2 justify-center md:justify-start mb-2">
+                ${v.isAdmin ? '<span class="badge badge-accent">Presidente</span>' : ''}
+                <span class="badge badge-primary">${v.cargo}</span>
+                <span class="badge badge-muted">${v.partido}</span>
+              </div>
+              <h1 class="text-2xl font-bold mb-2">${v.nome}</h1>
+              <p class="text-gray-600 mb-4">${v.bio || ''}</p>
+              <div class="flex gap-4 text-sm text-gray-500 justify-center md:justify-start flex-wrap">
+                <span>📧 ${v.email}</span>
+                <span>📱 ${v.telefone}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid md:grid-cols-3 gap-4 mb-6">
+          <div class="card text-center">
+            <div class="text-3xl font-bold" style="color: var(--primary);">${relatoriosVer.length}</div>
+            <div class="text-sm text-gray-500">Relatórios publicados</div>
+          </div>
+          <div class="card text-center">
+            <div class="text-3xl font-bold text-amber-600">${tarefasVer.filter(t => t.status !== 'concluida').length}</div>
+            <div class="text-sm text-gray-500">Tarefas ativas</div>
+          </div>
+          <div class="card text-center">
+            <div class="text-3xl font-bold text-emerald-700">${tarefasVer.filter(t => t.status === 'concluida').length}</div>
+            <div class="text-sm text-gray-500">Tarefas concluídas</div>
+          </div>
+        </section>
+
+        <h2 class="font-bold text-lg mb-3">Relatórios publicados</h2>
+        <div class="grid md:grid-cols-2 gap-4">
+          ${relatoriosVer.map(r => `
+            <a href="relatorio.html?id=${r.id}" class="card p-0 overflow-hidden hover:scale-[1.01] transition-transform" style="text-decoration: none; color: inherit;">
+              <div style="height: 140px; overflow: hidden; background: var(--primary-dark);">
+                <img src="${r.imagens[0]?.url}" alt="" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src=window.imgFallback;">
+              </div>
+              <div class="p-4">
+                <span class="badge badge-primary mb-2" style="font-size: 0.65rem;">${categoriaLabel(r.categoria)}</span>
+                <h3 class="font-bold text-sm">${r.titulo}</h3>
+                <p class="text-xs text-gray-500 mt-1">${fmtData(r.criadoEm)}</p>
+              </div>
+            </a>
+          `).join('') || '<p class="text-gray-500 col-span-full">Sem relatórios publicados ainda.</p>'}
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

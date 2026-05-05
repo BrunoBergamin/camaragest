@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Portal de Transparência da Câmara Municipal. Vereadores, projetos e ações públicas." />
+  <title>Portal de Transparência - Câmara Municipal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <!-- Header público -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="publico.html" class="flex items-center gap-2 font-bold text-lg" style="color: var(--primary);">
+        <span style="font-size: 1.5rem;">🏛️</span>
+        <span>Portal da Transparência</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+        <a href="#vereadores" class="text-gray-600 hover:text-gray-900">Vereadores</a>
+        <a href="#projetos" class="text-gray-600 hover:text-gray-900">Projetos</a>
+        <a href="#ouvidoria" class="text-gray-600 hover:text-gray-900">Ouvidoria</a>
+      </nav>
+      <a href="app/login.html" class="btn btn-outline btn-sm">🔒 Acesso restrito</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero-bg">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 text-center">
+      <span class="inline-block px-3 py-1 rounded-full bg-white/15 text-white text-xs font-semibold mb-4">PORTAL CIDADÃO</span>
+      <h1 class="text-3xl lg:text-4xl font-extrabold text-white mb-3">Câmara Municipal de Iperó</h1>
+      <p class="text-white/85 text-lg mb-2">Conheça seus vereadores, acompanhe projetos e ações realizadas no município.</p>
+      <p class="text-white/60 text-sm">Em conformidade com a Lei de Acesso à Informação (Lei 12.527/2011)</p>
+    </div>
+  </section>
+
+  <!-- Vereadores -->
+  <section id="vereadores" class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="section-title text-center mb-3">Nossos Vereadores</h2>
+      <p class="section-sub text-center mb-8">Os representantes que você elegeu</p>
+      <div id="gridVereadores" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"></div>
+    </div>
+  </section>
+
+  <!-- Estatísticas -->
+  <section class="py-12" style="background: var(--bg);">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="card metric-card green text-center card-hover">
+        <div class="metric-value" id="numVereadores">0</div>
+        <div class="text-sm text-gray-500 mt-2">Vereadores em exercício</div>
+      </div>
+      <div class="card metric-card gold text-center card-hover">
+        <div class="metric-value gold" id="numRelatorios">0</div>
+        <div class="text-sm text-gray-500 mt-2">Projetos publicados</div>
+      </div>
+      <div class="card metric-card blue text-center card-hover">
+        <div class="metric-value" style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">2026</div>
+        <div class="text-sm text-gray-500 mt-2">Mandato em curso</div>
+      </div>
+      <div class="card metric-card amber text-center card-hover">
+        <div class="metric-value" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">100%</div>
+        <div class="text-sm text-gray-500 mt-2">Transparência ativa</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Projetos públicos -->
+  <section id="projetos" class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="section-title text-center mb-3">Projetos e Ações</h2>
+      <p class="section-sub text-center mb-8">O que sua Câmara está realizando</p>
+      <div id="gridRelatorios" class="grid md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </div>
+  </section>
+
+  <!-- Ouvidoria -->
+  <section id="ouvidoria" class="py-16" style="background: var(--primary);">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+      <div class="text-5xl mb-4">📞</div>
+      <h2 class="text-3xl font-bold mb-3">Ouvidoria Legislativa</h2>
+      <p class="text-white/85 mb-6">Sua opinião importa. Envie sugestões, reclamações, denúncias ou solicite informações.</p>
+      <p class="text-white/60 text-sm mb-8">Atendimento conforme Lei 13.460/2017</p>
+
+      <form id="form-ouvidoria" class="card text-left p-6 text-gray-800" style="background: white;">
+        <div class="grid md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="form-label">Seu nome</label>
+            <input class="form-input" name="nome" required>
+          </div>
+          <div>
+            <label class="form-label">Email para retorno</label>
+            <input class="form-input" name="email" type="email" required>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Tipo de manifestação</label>
+          <select class="form-select" name="tipo">
+            <option>💡 Sugestão</option>
+            <option>⚠️ Reclamação</option>
+            <option>🚨 Denúncia</option>
+            <option>❓ Solicitação de informação</option>
+            <option>👏 Elogio</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Sua mensagem</label>
+          <textarea class="form-textarea" name="mensagem" rows="4" required placeholder="Descreva sua manifestação..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary w-full justify-center btn-lg">Enviar manifestação</button>
+        <p class="text-xs text-gray-500 mt-3 text-center">Sua mensagem é encaminhada ao vereador responsável pela área.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-8 text-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <p class="text-gray-400 mb-2">Câmara Municipal de Iperó,Portal de Transparência</p>
+      <p class="text-gray-500 text-xs">Plataforma <a href="index.html" class="hover:text-white" style="color: var(--accent);">CâmaraGest</a>. Gestão para Câmaras Municipais</p>
+    </div>
+  </footer>
+
+  <!-- VLibras -->
+  <div vw class="enabled">
+    <div vw-access-button class="active"></div>
+    <div vw-plugin-wrapper>
+      <div class="vw-plugin-top-wrapper"></div>
+    </div>
+  </div>
+  <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+  <script>new window.VLibras.Widget('https://vlibras.gov.br/app');</script>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script>
+    // Vereadores
+    document.getElementById('gridVereadores').innerHTML = MOCK_DATA.vereadores.filter(v => v.ativo).map(v => `
+      <div class="card text-center p-4">
+        <img src="${v.foto}" class="avatar avatar-lg mx-auto mb-3" alt="${v.nome}">
+        <div class="font-bold text-sm mb-1 text-gray-900">${v.nome.split(' ').slice(0,2).join(' ')}</div>
+        <div class="text-xs text-gray-500 mb-2">${v.cargo},${v.partido}</div>
+        ${v.isAdmin ? '<span class="badge badge-accent" style="font-size: 0.65rem;">Presidente</span>' : ''}
+        <div class="text-xs text-gray-400 mt-2">📧 Contato disponível</div>
+      </div>
+    `).join('');
+
+    document.getElementById('numVereadores').textContent = MOCK_DATA.vereadores.filter(v => v.ativo).length;
+    document.getElementById('numRelatorios').textContent = MOCK_DATA.relatorios.length;
+
+    // Relatórios públicos
+    document.getElementById('gridRelatorios').innerHTML = MOCK_DATA.relatorios.map(r => {
+      const a = getVereador(r.autorId);
+      return `
+        <div class="card p-0 overflow-hidden">
+          <div style="height: 180px; overflow: hidden; background: var(--primary-dark);">
+            <img src="${r.imagens[0]?.url}" alt="" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src=window.imgFallback;">
+          </div>
+          <div class="p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="badge badge-primary">${categoriaLabel(r.categoria)}</span>
+              <span class="text-xs text-gray-500">${fmtData(r.criadoEm)}</span>
+            </div>
+            <h3 class="font-bold mb-2 line-clamp-2 text-gray-900">${r.titulo}</h3>
+            <p class="text-sm text-gray-600 line-clamp-2 mb-3">${r.descricao}</p>
+            <div class="flex items-center gap-2 pt-3 border-t border-gray-100">
+              <img src="${a.foto}" class="w-7 h-7 rounded-full object-cover" alt="">
+              <span class="text-xs text-gray-600">${a.nome.split(' ').slice(0,2).join(' ')}</span>
+              ${r.localizacao ? `<span class="ml-auto text-xs text-gray-400">📍 ${r.localizacao.split(' - ')[0]}</span>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Formulário ouvidoria
+    document.getElementById('form-ouvidoria').addEventListener('submit', (e) => {
+      e.preventDefault();
+      UI.toast('Manifestação enviada! Você receberá retorno por email em até 5 dias úteis.', 'success', 5000);
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>

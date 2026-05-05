@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reunião Online - CâmaraGest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <header class="flex items-center justify-between mb-4 flex-wrap gap-3">
+      <div>
+        <a href="dashboard.html" class="text-sm hover:underline mb-2 inline-block" style="color: var(--primary);">← Voltar ao dashboard</a>
+        <h1 class="text-2xl font-bold text-gray-900">🎥 Reunião online</h1>
+        <p class="text-gray-500 text-sm">Sala: <span id="salaNome" class="font-semibold"></span></p>
+      </div>
+      <div class="flex gap-2">
+        <button id="btnCopiarLink" class="btn btn-outline btn-sm">🔗 Copiar link</button>
+        <button id="btnNovaSala" class="btn btn-ghost btn-sm">+ Nova sala</button>
+      </div>
+    </header>
+
+    <!-- Card informativo -->
+    <div class="card mb-4" style="background: #fff3cd; border-color: #FFD700;">
+      <div class="flex items-start gap-3">
+        <div class="text-2xl">💡</div>
+        <div class="text-sm">
+          <strong>Reunião integrada à plataforma.</strong> Sem instalar nada, sem Zoom, sem WhatsApp.
+          Compartilhe o link acima com vereadores e participantes. Eles entram pelo navegador.
+          Suporta áudio HD, vídeo, compartilhamento de tela e chat.
+        </div>
+      </div>
+    </div>
+
+    <!-- Container da videochamada -->
+    <div id="jitsi-container" class="card p-0 overflow-hidden" style="height: 600px; background: #1a1a1a;"></div>
+
+    <!-- Recursos da reunião -->
+    <section class="grid md:grid-cols-3 gap-4 mt-6">
+      <div class="card text-center">
+        <div class="text-3xl mb-2">🎙️</div>
+        <h4 class="font-semibold mb-1">Áudio HD</h4>
+        <p class="text-xs text-gray-500">Cancelamento de ruído automático</p>
+      </div>
+      <div class="card text-center">
+        <div class="text-3xl mb-2">🖥️</div>
+        <h4 class="font-semibold mb-1">Compartilhamento de tela</h4>
+        <p class="text-xs text-gray-500">Apresentações e documentos</p>
+      </div>
+      <div class="card text-center">
+        <div class="text-3xl mb-2">💬</div>
+        <h4 class="font-semibold mb-1">Chat e enquetes</h4>
+        <p class="text-xs text-gray-500">Votação rápida em sessões</p>
+      </div>
+    </section>
+
+    <!-- Casos de uso -->
+    <section class="mt-8">
+      <h2 class="font-bold text-lg mb-4">Como sua Câmara pode usar</h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="card">
+          <h4 class="font-semibold mb-2">🏛️ Sessões remotas e híbridas</h4>
+          <p class="text-sm text-gray-600">Permitido pela Lei 14.030/2020. Vereadores participam de qualquer lugar.</p>
+        </div>
+        <div class="card">
+          <h4 class="font-semibold mb-2">👥 Reuniões de comissão</h4>
+          <p class="text-sm text-gray-600">Comissões temáticas se reúnem sem precisar deslocamento.</p>
+        </div>
+        <div class="card">
+          <h4 class="font-semibold mb-2">📢 Audiências públicas online</h4>
+          <p class="text-sm text-gray-600">Cidadão participa de qualquer lugar, mais participação democrática.</p>
+        </div>
+        <div class="card">
+          <h4 class="font-semibold mb-2">💼 Reuniões de gabinete</h4>
+          <p class="text-sm text-gray-600">Equipe do mandato alinhada, com gravação opcional para arquivo.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../assets/js/data.js"></script>
+  <script src="../assets/js/auth-mock.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script src="https://meet.jit.si/external_api.js"></script>
+  <script>
+    if (!Auth.requireAuth()) throw new Error('redirecting');
+    const user = Auth.current();
+    document.getElementById('navbar').innerHTML = UI.renderAppNavbar('reuniao');
+
+    // Sala: prioriza URL param (vinda da tarefa), senão usa sessionStorage, senão gera nova
+    const params = new URLSearchParams(location.search);
+    let sala = params.get('sala');
+    if (!sala) {
+      sala = sessionStorage.getItem('camaragest_sala');
+      if (!sala) {
+        sala = 'CamaraGest-Ipero-' + Math.random().toString(36).slice(2, 8);
+        sessionStorage.setItem('camaragest_sala', sala);
+      }
+    } else {
+      sessionStorage.setItem('camaragest_sala', sala);
+    }
+    document.getElementById('salaNome').textContent = sala;
+
+    // Iniciar Jitsi
+    const domain = 'meet.jit.si';
+    const options = {
+      roomName: sala,
+      width: '100%',
+      height: '100%',
+      parentNode: document.getElementById('jitsi-container'),
+      userInfo: {
+        displayName: user.nome,
+        email: user.email
+      },
+      configOverwrite: {
+        prejoinPageEnabled: false,
+        startWithAudioMuted: true,
+        startWithVideoMuted: false
+      },
+      interfaceConfigOverwrite: {
+        SHOW_JITSI_WATERMARK: false,
+        SHOW_WATERMARK_FOR_GUESTS: false,
+        DEFAULT_BACKGROUND: '#0F5132'
+      }
+    };
+    const api = new JitsiMeetExternalAPI(domain, options);
+
+    // Botões
+    document.getElementById('btnCopiarLink').addEventListener('click', () => {
+      const link = `https://meet.jit.si/${sala}`;
+      navigator.clipboard.writeText(link).then(() => {
+        UI.toast('Link copiado! Compartilhe com os participantes.', 'success', 3000);
+      });
+    });
+
+    document.getElementById('btnNovaSala').addEventListener('click', () => {
+      if (confirm('Criar nova sala? A atual será encerrada.')) {
+        sessionStorage.removeItem('camaragest_sala');
+        location.reload();
+      }
+    });
+  </script>
+</body>
+</html>

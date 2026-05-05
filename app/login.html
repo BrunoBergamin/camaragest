@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrar - CâmaraGest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body class="min-h-screen flex items-center justify-center hero-bg p-4">
+
+  <div class="w-full max-w-md">
+    <a href="../index.html" class="flex items-center justify-center gap-2 font-bold text-2xl text-white mb-8">
+      <span style="font-size: 2rem;">🏛️</span>
+      <span>CâmaraGest</span>
+    </a>
+
+    <div class="card p-8">
+      <h1 class="text-2xl font-bold mb-1 text-gray-900">Bem-vindo</h1>
+      <p class="text-gray-500 text-sm mb-6">Acesse sua conta para continuar</p>
+
+      <form id="form-login">
+        <div class="mb-4">
+          <label class="form-label">Email institucional</label>
+          <input class="form-input" type="email" name="email" required value="joao.silva@camaraipero.sp.gov.br">
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Senha</label>
+          <input class="form-input" type="password" name="senha" required value="demo1234">
+        </div>
+        <div class="flex items-center justify-between text-sm mb-6">
+          <label class="flex items-center gap-2 text-gray-600">
+            <input type="checkbox"> Lembrar
+          </label>
+          <a href="#" style="color: var(--primary);" class="hover:underline">Esqueci minha senha</a>
+        </div>
+        <button type="submit" class="btn btn-primary w-full justify-center btn-lg">Entrar</button>
+      </form>
+
+      <div class="mt-6 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
+        Quer apenas explorar?
+        <a href="../demo.html" style="color: var(--primary);" class="font-semibold hover:underline">Acessar demonstração</a>
+      </div>
+    </div>
+
+    <p class="text-white/70 text-xs text-center mt-6">© 2026 CâmaraGest</p>
+  </div>
+
+  <script src="../assets/js/data.js"></script>
+  <script src="../assets/js/auth-mock.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script>
+    document.getElementById('form-login').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const email = form.email.value.trim();
+      const senha = form.senha.value;
+      const result = Auth.loginEmailSenha(email, senha);
+      if (result.ok) {
+        UI.toast('Bem-vindo, ' + result.user.nome.split(' ')[0] + '!', 'success');
+        setTimeout(() => location.href = 'dashboard.html', 600);
+      } else {
+        UI.toast(result.msg, 'error');
+      }
+    });
+  </script>
+</body>
+</html>
