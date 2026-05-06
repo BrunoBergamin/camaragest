@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demandas da População - Câmara de Iperó</title>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ipero_tema') || 'institucional');</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="../assets/css/themes.css" />
+  <script src="../assets/js/themes.js"></script>
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <header class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Demandas da população</h1>
+        <p class="text-gray-500 text-sm" id="subtitulo"></p>
+      </div>
+      <button id="btnNova" class="btn btn-primary">+ Nova demanda</button>
+    </header>
+
+    <!-- Cards de resumo -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="card metric-card amber card-hover">
+        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Abertas</div>
+        <div class="metric-value" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="totalAbertas">0</div>
+        <div class="text-xs text-gray-500 mt-2">Aguardando vereador</div>
+      </div>
+      <div class="card metric-card blue card-hover">
+        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Em atendimento</div>
+        <div class="metric-value" style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="totalAndamento">0</div>
+        <div class="text-xs text-gray-500 mt-2">Sendo resolvidas</div>
+      </div>
+      <div class="card metric-card green card-hover">
+        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Resolvidas</div>
+        <div class="metric-value" id="totalResolvidas">0</div>
+        <div class="text-xs text-gray-500 mt-2">Atendidas com sucesso</div>
+      </div>
+      <div class="card metric-card gold card-hover">
+        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Total</div>
+        <div class="metric-value gold" id="totalGeral">0</div>
+        <div class="text-xs text-gray-500 mt-2">Demandas registradas</div>
+      </div>
+    </section>
+
+    <!-- Filtros -->
+    <section class="card mb-6">
+      <div class="grid md:grid-cols-4 gap-3">
+        <div>
+          <label class="form-label">Buscar</label>
+          <input id="filtroBusca" class="form-input" placeholder="Nome, descrição, protocolo...">
+        </div>
+        <div>
+          <label class="form-label">Categoria</label>
+          <select id="filtroCategoria" class="form-select">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Status</label>
+          <select id="filtroStatus" class="form-select">
+            <option value="">Todos</option>
+            <option value="aberta">Aberta</option>
+            <option value="em_atendimento">Em atendimento</option>
+            <option value="resolvida">Resolvida</option>
+            <option value="arquivada">Arquivada</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Vereador responsável</label>
+          <select id="filtroVereador" class="form-select">
+            <option value="">Todos</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lista de demandas -->
+    <section id="listaDemandas" class="space-y-3"></section>
+  </main>
+
+  <script src="../assets/js/data.js"></script>
+  <script src="../assets/js/auth-mock.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script>
+    if (!Auth.requireAuth()) throw new Error('redirecting');
+    const user = Auth.current();
+    const papel = getPapel(user);
+    document.getElementById('navbar').innerHTML = UI.renderAppNavbar('demandas');
+
+    // Subtítulo conforme papel
+    document.getElementById('subtitulo').textContent = ({
+      atendente: 'Registre demandas dos cidadãos e direcione aos vereadores responsáveis.',
+      admin: 'Visão geral de todas as demandas da população.',
+      vereador: 'Demandas direcionadas a você pelos atendentes.'
+    })[papel];
+
+    // Esconde botão "Nova demanda" se não for atendente nem admin
+    if (!Auth.podeGerenciarDemandas()) {
+      document.getElementById('btnNova').style.display = 'none';
+    }
+
+    // Trabalha em cópia
+    let demandas = JSON.parse(JSON.stringify(MOCK_DATA.demandas));
+
+    // Popula filtros
+    const selCat = document.getElementById('filtroCategoria');
+    demandaCategorias.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = `${c.icone} ${c.label}`;
+      selCat.appendChild(opt);
+    });
+
+    const selVer = document.getElementById('filtroVereador');
+    MOCK_DATA.vereadores.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = v.nome;
+      selVer.appendChild(opt);
+    });
+
+    ['filtroBusca','filtroCategoria','filtroStatus','filtroVereador'].forEach(id =>
+      document.getElementById(id).addEventListener('input', render)
+    );
+
+    function getFiltradas() {
+      const busca = document.getElementById('filtroBusca').value.toLowerCase();
+      const cat = document.getElementById('filtroCategoria').value;
+      const status = document.getElementById('filtroStatus').value;
+      const ver = document.getElementById('filtroVereador').value;
+
+      return demandas.filter(d => {
+        // Permissão: vereador só vê as suas
+        if (papel === 'vereador' && !d.vereadoresResponsaveis.includes(user.id)) return false;
+        if (busca) {
+          const txt = `${d.cidadao.nome} ${d.descricao} ${d.protocolo} ${d.cidadao.bairro}`.toLowerCase();
+          if (!txt.includes(busca)) return false;
+        }
+        if (cat && d.categoria !== cat) return false;
+        if (status && d.status !== status) return false;
+        if (ver && !d.vereadoresResponsaveis.includes(ver)) return false;
+        return true;
+      });
+    }
+
+    function animateCount(id, target, duration = 1200) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.floor(target * eased);
+        if (progress < 1) requestAnimationFrame(tick);
+        else el.textContent = target;
+      }
+      requestAnimationFrame(tick);
+    }
+
+    let primeiraRender = true;
+
+    function render() {
+      const lista = getFiltradas();
+
+      // Métricas (todas as visíveis ao usuário, antes de filtros)
+      const visiveis = demandas.filter(d =>
+        papel !== 'vereador' || d.vereadoresResponsaveis.includes(user.id)
+      );
+      const stats = {
+        aberta: visiveis.filter(d => d.status === 'aberta').length,
+        em_atendimento: visiveis.filter(d => d.status === 'em_atendimento').length,
+        resolvida: visiveis.filter(d => d.status === 'resolvida').length,
+        total: visiveis.length
+      };
+
+      if (primeiraRender) {
+        animateCount('totalAbertas', stats.aberta);
+        animateCount('totalAndamento', stats.em_atendimento);
+        animateCount('totalResolvidas', stats.resolvida);
+        animateCount('totalGeral', stats.total);
+        primeiraRender = false;
+      } else {
+        document.getElementById('totalAbertas').textContent = stats.aberta;
+        document.getElementById('totalAndamento').textContent = stats.em_atendimento;
+        document.getElementById('totalResolvidas').textContent = stats.resolvida;
+        document.getElementById('totalGeral').textContent = stats.total;
+      }
+
+      // Lista
+      document.getElementById('listaDemandas').innerHTML = lista.map(d => {
+        const atendente = getAtendente(d.atendenteId);
+        const vereadoresHTML = d.vereadoresResponsaveis.map(vid => {
+          const v = getVereador(vid);
+          if (!v) return '';
+          return `
+            <div class="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gray-100" title="${v.nome}">
+              <img src="${v.foto}" class="w-5 h-5 rounded-full object-cover" alt="">
+              <span class="text-xs font-medium text-gray-700">${v.nome.split(' ')[0]}</span>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <a href="demanda.html?id=${d.id}" class="card block hover:scale-[1.005] transition-transform" style="text-decoration: none; color: inherit; border-left: 5px solid ${demandaStatusCor(d.status)};">
+            <div class="flex items-start gap-4 flex-wrap">
+              <div class="flex-shrink-0 text-2xl">${(demandaCategorias.find(c => c.id === d.categoria) || {}).icone || '📋'}</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+                  <span class="badge ${demandaStatusBadge(d.status)}">${demandaStatusLabel(d.status)}</span>
+                  <span class="text-xs font-mono text-gray-500">#${d.protocolo}</span>
+                  <span class="badge ${prioridadeBadge(d.prioridade)}" style="font-size: 0.65rem;">${prioridadeLabel(d.prioridade)}</span>
+                </div>
+                <h3 class="font-bold text-gray-900 mb-1">${d.cidadao.nome}</h3>
+                <p class="text-sm text-gray-600 line-clamp-2 mb-2">${d.descricao}</p>
+                <div class="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
+                  <span>📍 ${d.cidadao.bairro}</span>
+                  <span>📅 ${fmtData(d.criadaEm)}</span>
+                  <span>📞 ${d.cidadao.telefone}</span>
+                </div>
+              </div>
+              <div class="flex-shrink-0">
+                <div class="text-xs text-gray-500 mb-1.5 text-right">Vereadores responsáveis</div>
+                <div class="flex flex-wrap gap-1 justify-end">${vereadoresHTML}</div>
+              </div>
+            </div>
+          </a>
+        `;
+      }).join('') || '<p class="text-gray-500 text-center py-8">Nenhuma demanda encontrada com os filtros aplicados.</p>';
+    }
+
+    // Modal "Nova demanda"
+    document.getElementById('btnNova').addEventListener('click', () => {
+      if (!Auth.podeGerenciarDemandas()) {
+        UI.toast('Apenas atendentes ou o presidente podem registrar demandas.', 'warning');
+        return;
+      }
+
+      const optsCategoria = demandaCategorias.map(c => `<option value="${c.id}">${c.icone} ${c.label}</option>`).join('');
+      const optsVereadores = MOCK_DATA.vereadores.filter(v => v.ativo).map(v =>
+        `<label class="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+           <input type="checkbox" name="vereador" value="${v.id}" style="width: 1rem; height: 1rem;">
+           <img src="${v.foto}" class="w-7 h-7 rounded-full object-cover" alt="">
+           <span class="text-sm">${v.nome.split(' ').slice(0,3).join(' ')}</span>
+           <span class="ml-auto text-xs text-gray-500">${v.partido}</span>
+         </label>`
+      ).join('');
+
+      const m = UI.modal({
+        title: 'Registrar nova demanda',
+        body: `
+          <form id="formNovaDemanda" class="space-y-4">
+            <fieldset class="border border-gray-200 rounded-lg p-4">
+              <legend class="px-2 text-sm font-semibold text-gray-700">👤 Dados do cidadão</legend>
+              <div class="grid md:grid-cols-2 gap-3">
+                <div><label class="form-label">Nome completo *</label><input class="form-input" name="cidadaoNome" required placeholder="Ex: João da Silva"></div>
+                <div><label class="form-label">Telefone *</label><input class="form-input" name="cidadaoTelefone" required placeholder="(15) 99999-9999"></div>
+                <div class="md:col-span-2"><label class="form-label">Endereço</label><input class="form-input" name="cidadaoEndereco" placeholder="Rua, número"></div>
+                <div class="md:col-span-2"><label class="form-label">Bairro / Região *</label><input class="form-input" name="cidadaoBairro" required placeholder="Ex: Vila Nova"></div>
+              </div>
+            </fieldset>
+
+            <fieldset class="border border-gray-200 rounded-lg p-4">
+              <legend class="px-2 text-sm font-semibold text-gray-700">📋 Demanda</legend>
+              <div class="space-y-3">
+                <div><label class="form-label">Descrição da demanda *</label><textarea class="form-textarea" name="descricao" rows="3" required placeholder="Detalhe o que o cidadão está pedindo..."></textarea></div>
+                <div class="grid md:grid-cols-2 gap-3">
+                  <div><label class="form-label">Categoria *</label><select class="form-select" name="categoria" required>${optsCategoria}</select></div>
+                  <div><label class="form-label">Prioridade</label>
+                    <select class="form-select" name="prioridade">
+                      <option value="baixa">Baixa</option>
+                      <option value="media" selected>Média</option>
+                      <option value="alta">Alta</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="border-2 rounded-lg p-4" style="border-color: var(--accent);">
+              <legend class="px-2 text-sm font-bold" style="color: var(--primary-dark);">🎯 Direcionar para vereador(es) *</legend>
+              <p class="text-xs text-gray-500 mb-3">Selecione um ou mais vereadores responsáveis pela demanda.</p>
+              <div class="grid md:grid-cols-2 gap-1 max-h-64 overflow-y-auto">
+                ${optsVereadores}
+              </div>
+            </fieldset>
+          </form>
+        `,
+        footer: `
+          <button class="btn btn-ghost" data-close>Cancelar</button>
+          <button class="btn btn-primary" id="btnSalvarDemanda">Registrar demanda</button>
+        `
+      });
+
+      document.getElementById('btnSalvarDemanda').addEventListener('click', () => {
+        const f = document.getElementById('formNovaDemanda');
+        if (!f.checkValidity()) { f.reportValidity(); return; }
+        const fd = new FormData(f);
+        const vereadoresSelecionados = fd.getAll('vereador');
+        if (vereadoresSelecionados.length === 0) {
+          UI.toast('Selecione ao menos um vereador responsável.', 'warning');
+          return;
+        }
+        const proxNum = String(demandas.length + 1).padStart(3, '0');
+        const nova = {
+          id: 'd' + Date.now(),
+          protocolo: '2026-' + proxNum,
+          cidadao: {
+            nome: fd.get('cidadaoNome'),
+            telefone: fd.get('cidadaoTelefone'),
+            endereco: fd.get('cidadaoEndereco'),
+            bairro: fd.get('cidadaoBairro')
+          },
+          descricao: fd.get('descricao'),
+          categoria: fd.get('categoria'),
+          regiao: fd.get('cidadaoBairro'),
+          vereadoresResponsaveis: vereadoresSelecionados,
+          atendenteId: user.id,
+          status: 'aberta',
+          prioridade: fd.get('prioridade'),
+          criadaEm: new Date().toISOString().slice(0, 10),
+          observacoes: ''
+        };
+        demandas.unshift(nova);
+        m.close();
+        UI.toast(`Demanda #${nova.protocolo} registrada e direcionada a ${vereadoresSelecionados.length} vereador(es)!`, 'success', 4000);
+        render();
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demanda - Câmara de Iperó</title>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ipero_tema') || 'institucional');</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="../assets/css/themes.css" />
+  <script src="../assets/js/themes.js"></script>
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <a href="demandas.html" class="text-sm hover:underline mb-4 inline-block" style="color: var(--primary);">← Voltar para demandas</a>
+    <article id="conteudo"></article>
+  </main>
+
+  <script src="../assets/js/data.js"></script>
+  <script src="../assets/js/auth-mock.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script>
+    if (!Auth.requireAuth()) throw new Error('redirecting');
+    const user = Auth.current();
+    const papel = getPapel(user);
+    document.getElementById('navbar').innerHTML = UI.renderAppNavbar('demandas');
+
+    const id = new URLSearchParams(location.search).get('id');
+    let d = getDemanda(id);
+
+    if (!d) {
+      document.getElementById('conteudo').innerHTML = '<p class="text-gray-500 text-center py-8">Demanda não encontrada.</p>';
+    } else {
+      // Permissão: vereador comum só pode ver as suas
+      if (papel === 'vereador' && !d.vereadoresResponsaveis.includes(user.id)) {
+        document.getElementById('conteudo').innerHTML = '<p class="text-gray-500 text-center py-8">Você não tem permissão para visualizar esta demanda.</p>';
+      } else {
+        renderDemanda();
+      }
+    }
+
+    function renderDemanda() {
+      const atendente = getAtendente(d.atendenteId);
+      const podeEditarStatus = papel === 'admin' || papel === 'atendente' || (papel === 'vereador' && d.vereadoresResponsaveis.includes(user.id));
+      const cat = demandaCategorias.find(c => c.id === d.categoria) || { icone: '📋', label: d.categoria };
+
+      const vereadoresHTML = d.vereadoresResponsaveis.map(vid => {
+        const v = getVereador(vid);
+        if (!v) return '';
+        return `
+          <a href="vereador.html?id=${v.id}" class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50" style="text-decoration: none; color: inherit;">
+            <img src="${v.foto}" class="w-10 h-10 rounded-full object-cover" alt="">
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-sm text-gray-900 truncate">${v.nome.split(' ').slice(0,3).join(' ')}</div>
+              <div class="text-xs text-gray-500 truncate">${v.cargo}, ${v.partido}</div>
+            </div>
+          </a>
+        `;
+      }).join('');
+
+      document.getElementById('conteudo').innerHTML = `
+        <header class="mb-6">
+          <div class="flex items-center gap-2 flex-wrap mb-3">
+            <span class="badge ${demandaStatusBadge(d.status)}">${demandaStatusLabel(d.status)}</span>
+            <span class="text-sm font-mono text-gray-500">Protocolo #${d.protocolo}</span>
+            <span class="badge ${prioridadeBadge(d.prioridade)}">${prioridadeLabel(d.prioridade)}</span>
+            <span class="badge badge-muted">${cat.icone} ${cat.label}</span>
+          </div>
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-1">${d.cidadao.nome}</h1>
+          <p class="text-gray-500 text-sm">Demanda registrada em ${fmtData(d.criadaEm)}${atendente ? ` por ${atendente.nome}` : ''}.</p>
+        </header>
+
+        <section class="card mb-6">
+          <h2 class="font-bold text-lg text-gray-900 mb-3">📝 Descrição da demanda</h2>
+          <p class="text-gray-700 leading-relaxed whitespace-pre-line">${d.descricao}</p>
+          ${d.observacoes ? `
+            <div class="mt-4 pt-4 border-t border-gray-100">
+              <h3 class="font-semibold text-sm text-gray-700 mb-2">Observações do atendente</h3>
+              <p class="text-sm text-gray-600 italic">${d.observacoes}</p>
+            </div>
+          ` : ''}
+        </section>
+
+        <section class="grid md:grid-cols-2 gap-4 mb-6">
+          <div class="card">
+            <h3 class="font-bold text-gray-900 mb-3">📞 Contato do cidadão</h3>
+            <div class="space-y-2 text-sm">
+              <div><strong>Telefone:</strong> ${d.cidadao.telefone}</div>
+              <div><strong>Endereço:</strong> ${d.cidadao.endereco || 'Não informado'}</div>
+              <div><strong>Bairro:</strong> ${d.cidadao.bairro}</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 class="font-bold text-gray-900 mb-3">📍 Localização</h3>
+            <div class="space-y-2 text-sm">
+              <div><strong>Região:</strong> ${d.regiao}</div>
+              <div><strong>Categoria:</strong> ${cat.icone} ${cat.label}</div>
+              <div><strong>Prioridade:</strong> <span class="badge ${prioridadeBadge(d.prioridade)}">${prioridadeLabel(d.prioridade)}</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card mb-6">
+          <h2 class="font-bold text-lg text-gray-900 mb-3">🎯 Vereadores responsáveis (${d.vereadoresResponsaveis.length})</h2>
+          <div class="grid sm:grid-cols-2 gap-2">
+            ${vereadoresHTML}
+          </div>
+        </section>
+
+        ${podeEditarStatus ? `
+          <section class="card" style="background: #fff8e1; border-color: #FFD700;">
+            <h2 class="font-bold text-lg text-gray-900 mb-3">⚙️ Atualizar status da demanda</h2>
+            <p class="text-sm text-gray-600 mb-3">Altere o status conforme o andamento. A mudança fica registrada no histórico.</p>
+            <div class="flex flex-wrap gap-2">
+              <button class="btn btn-sm" onclick="mudarStatus('aberta')" style="background: #fef3c7; color: #92400e; border: 2px solid #f59e0b;">📩 Reabrir</button>
+              <button class="btn btn-sm" onclick="mudarStatus('em_atendimento')" style="background: #dbeafe; color: #1e40af; border: 2px solid #3b82f6;">⏳ Em atendimento</button>
+              <button class="btn btn-sm" onclick="mudarStatus('resolvida')" style="background: #d1fae5; color: #065f46; border: 2px solid #10b981;">✅ Marcar como resolvida</button>
+              <button class="btn btn-sm" onclick="mudarStatus('arquivada')" style="background: #e5e7eb; color: #374151; border: 2px solid #9ca3af;">📦 Arquivar</button>
+            </div>
+          </section>
+        ` : ''}
+      `;
+    }
+
+    window.mudarStatus = function(novoStatus) {
+      d.status = novoStatus;
+      // Atualiza no MOCK_DATA também (sessão)
+      const idx = MOCK_DATA.demandas.findIndex(x => x.id === d.id);
+      if (idx >= 0) MOCK_DATA.demandas[idx].status = novoStatus;
+      UI.toast(`Status atualizado para: ${demandaStatusLabel(novoStatus)}`, 'success', 2500);
+      renderDemanda();
+    };
+  </script>
+</body>
+</html>

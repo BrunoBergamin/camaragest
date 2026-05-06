@@ -5,8 +5,9 @@ const AUTH_KEY = 'camaragest_user';
 const DEMO_FLAG = 'camaragest_is_demo';
 
 window.Auth = {
-  loginAs(vereadorId, isDemo = false) {
-    const user = window.getVereador(vereadorId);
+  loginAs(usuarioId, isDemo = false) {
+    // Aceita ID de vereador OU atendente
+    const user = window.getUsuario ? window.getUsuario(usuarioId) : window.getVereador(usuarioId);
     if (!user) return false;
     localStorage.setItem(AUTH_KEY, JSON.stringify(user));
     localStorage.setItem(DEMO_FLAG, isDemo ? '1' : '0');
@@ -14,7 +15,9 @@ window.Auth = {
   },
 
   loginEmailSenha(email, senha) {
-    const user = MOCK_DATA.vereadores.find(v => v.email === email);
+    // Procura em vereadores e atendentes
+    const todos = [...MOCK_DATA.vereadores, ...(MOCK_DATA.atendentes || [])];
+    const user = todos.find(u => u.email === email);
     if (!user) return { ok: false, msg: 'Email não encontrado.' };
     if (senha.length < 4) return { ok: false, msg: 'Senha incorreta.' };
     localStorage.setItem(AUTH_KEY, JSON.stringify(user));
@@ -53,6 +56,13 @@ window.Auth = {
       return false;
     }
     return true;
+  },
+
+  // Usuário pode gerenciar demandas? Atendente OU Admin
+  podeGerenciarDemandas() {
+    const u = this.current();
+    if (!u) return false;
+    return u.isAdmin || u.papel === 'atendente';
   },
 
   // No modo demo, bloqueia ação destrutiva. Retorna true se foi bloqueada.

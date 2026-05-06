@@ -204,6 +204,35 @@
       color: white;
       box-shadow: 0 4px 12px -2px rgba(15,81,50,0.4);
     }
+    .role-badge.atendente {
+      background: linear-gradient(135deg, #3b82f6, #1e40af);
+      color: white;
+      box-shadow: 0 4px 12px -2px rgba(59,130,246,0.4);
+    }
+    .role-card.atendente .avatar-frame::before {
+      background: conic-gradient(
+        from 0deg,
+        #3b82f6 0deg,
+        #60a5fa 90deg,
+        #3b82f6 180deg,
+        #1e40af 270deg,
+        #3b82f6 360deg
+      );
+    }
+    .role-card.atendente:hover {
+      box-shadow:
+        0 30px 80px -20px rgba(0, 0, 0, 0.5),
+        0 0 60px -10px rgba(59, 130, 246, 0.6);
+    }
+    .role-card.atendente .role-features li::before {
+      background: linear-gradient(135deg, #3b82f6, #1e40af);
+      color: white;
+    }
+    .role-cta.atendente {
+      background: linear-gradient(135deg, #3b82f6, #1e40af);
+      color: white;
+      box-shadow: 0 8px 20px -6px rgba(59,130,246,0.5);
+    }
 
     .role-features {
       text-align: left;
@@ -299,7 +328,7 @@
         Esta é uma demonstração com dados fictícios. Escolha um papel para entrar:
       </p>
 
-      <div class="grid md:grid-cols-2 gap-6">
+      <div class="grid md:grid-cols-3 gap-6">
 
         <!-- Card Presidente -->
         <button id="entrar-presidente" class="role-card admin">
@@ -313,9 +342,26 @@
             <li>Painel administrativo completo</li>
             <li>Cadastro e gestão de vereadores</li>
             <li>Criação e atribuição de tarefas</li>
-            <li>Acesso a todos os relatórios</li>
+            <li>Visão geral de todas as demandas</li>
           </ul>
           <span class="role-cta admin">Entrar como Presidente</span>
+        </button>
+
+        <!-- Card Atendente -->
+        <button id="entrar-atendente" class="role-card atendente">
+          <div class="avatar-frame">
+            <img src="https://i.pravatar.cc/300?img=47" alt="Patrícia Almeida">
+          </div>
+          <span class="role-badge atendente">Atendente</span>
+          <h3 class="text-xl font-bold mt-2 mb-1" style="color: #1F2937;">Patrícia Almeida</h3>
+          <p class="text-sm text-gray-500 mb-4">Atendente do gabinete</p>
+          <ul class="role-features">
+            <li>Registrar demandas dos cidadãos</li>
+            <li>Direcionar para os vereadores</li>
+            <li>Acompanhar atendimento</li>
+            <li>Histórico completo de protocolos</li>
+          </ul>
+          <span class="role-cta atendente">Entrar como Atendente</span>
         </button>
 
         <!-- Card Vereadora -->
@@ -327,9 +373,9 @@
           <h3 class="text-xl font-bold mt-2 mb-1" style="color: #1F2937;">Maria Goreti</h3>
           <p class="text-sm text-gray-500 mb-4">Vereadora (Comissão de Educação)</p>
           <ul class="role-features">
-            <li>Atualizar suas tarefas</li>
+            <li>Receber demandas direcionadas</li>
+            <li>Atualizar tarefas e status</li>
             <li>Publicar relatórios com fotos</li>
-            <li>Editar perfil e foto</li>
             <li>Ver perfis dos colegas</li>
           </ul>
           <span class="role-cta vereador">Entrar como Vereadora</span>
@@ -349,6 +395,10 @@
   <script>
     document.getElementById('entrar-presidente').addEventListener('click', () => {
       Auth.loginAs('v1', true);
+      window.location.href = 'app/dashboard.html';
+    });
+    document.getElementById('entrar-atendente').addEventListener('click', () => {
+      Auth.loginAs('a1', true);
       window.location.href = 'app/dashboard.html';
     });
     document.getElementById('entrar-vereador').addEventListener('click', () => {

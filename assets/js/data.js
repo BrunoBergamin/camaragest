@@ -12,6 +12,33 @@ const BASE = (function () {
 })();
 
 window.MOCK_DATA = {
+  atendentes: [
+    {
+      id: 'a1',
+      nome: 'Patrícia Almeida',
+      cargo: 'Atendente',
+      bio: 'Atendente do gabinete da Câmara. Recebe demandas dos cidadãos e direciona aos vereadores responsáveis.',
+      foto: 'https://i.pravatar.cc/300?img=47',
+      telefone: '(15) 3266-3446',
+      email: 'atendimento@camaraipero.sp.gov.br',
+      papel: 'atendente',
+      isAdmin: false,
+      ativo: true
+    },
+    {
+      id: 'a2',
+      nome: 'Rafael Costa',
+      cargo: 'Atendente',
+      bio: 'Atendente do gabinete. Cadastra ofícios, atende telefone e protocola pedidos da população.',
+      foto: 'https://i.pravatar.cc/300?img=33',
+      telefone: '(15) 3266-3446',
+      email: 'atendimento2@camaraipero.sp.gov.br',
+      papel: 'atendente',
+      isAdmin: false,
+      ativo: true
+    }
+  ],
+
   vereadores: [
     {
       id: 'v1',
@@ -333,13 +360,145 @@ window.MOCK_DATA = {
         { url: 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=800&q=80', legenda: 'Fachada da delegacia' }
       ]
     }
+  ],
+
+  demandas: [
+    {
+      id: 'd1',
+      protocolo: '2026-001',
+      cidadao: { nome: 'José Antônio Pereira', telefone: '(15) 99876-1234', endereco: 'Rua das Acácias, 234', bairro: 'Vila Nova' },
+      categoria: 'obras',
+      descricao: 'Buracos enormes na Rua das Acácias estão impedindo passagem de carros e ônibus escolares. Necessária urgência no recapeamento.',
+      regiao: 'Vila Nova',
+      vereadoresResponsaveis: ['v4', 'v6'],
+      atendenteId: 'a1',
+      status: 'em_atendimento',
+      prioridade: 'alta',
+      criadaEm: '2026-05-04',
+      observacoes: 'Cidadão relata risco de acidente com crianças.'
+    },
+    {
+      id: 'd2',
+      protocolo: '2026-002',
+      cidadao: { nome: 'Maria das Graças Lima', telefone: '(15) 99765-4321', endereco: 'Av. Brasil, 1500', bairro: 'Centro' },
+      categoria: 'saude',
+      descricao: 'Falta de médico na UBS do Centro às quartas-feiras. Mães com bebês ficam sem atendimento.',
+      regiao: 'Centro',
+      vereadoresResponsaveis: ['v7', 'v1'],
+      atendenteId: 'a1',
+      status: 'aberta',
+      prioridade: 'alta',
+      criadaEm: '2026-05-05',
+      observacoes: ''
+    },
+    {
+      id: 'd3',
+      protocolo: '2026-003',
+      cidadao: { nome: 'Carlos Eduardo Souza', telefone: '(15) 99654-3210', endereco: 'Rua dos Ipês, 78', bairro: 'Jardim Bela Vista' },
+      categoria: 'iluminacao',
+      descricao: 'Postes apagados há mais de 2 semanas na Rua dos Ipês, gerando insegurança à noite.',
+      regiao: 'Jardim Bela Vista',
+      vereadoresResponsaveis: ['v3'],
+      atendenteId: 'a2',
+      status: 'aberta',
+      prioridade: 'media',
+      criadaEm: '2026-05-05',
+      observacoes: ''
+    },
+    {
+      id: 'd4',
+      protocolo: '2026-004',
+      cidadao: { nome: 'Ana Beatriz Ferreira', telefone: '(15) 99543-2109', endereco: 'Praça da Matriz, s/n', bairro: 'Centro' },
+      categoria: 'cultura',
+      descricao: 'Sugestão de criação de feira cultural mensal na praça central com artesãos locais.',
+      regiao: 'Centro',
+      vereadoresResponsaveis: ['v9', 'v11'],
+      atendenteId: 'a1',
+      status: 'em_atendimento',
+      prioridade: 'baixa',
+      criadaEm: '2026-04-30',
+      observacoes: 'Sugestão muito bem recebida pelos vereadores.'
+    },
+    {
+      id: 'd5',
+      protocolo: '2026-005',
+      cidadao: { nome: 'Roberto Silva Santos', telefone: '(15) 99432-1098', endereco: 'Rua Primavera, 45', bairro: 'Jardim Primavera' },
+      categoria: 'seguranca',
+      descricao: 'Aumento de furtos no bairro nas últimas semanas. Solicita aumento do efetivo policial e ronda noturna.',
+      regiao: 'Jardim Primavera',
+      vereadoresResponsaveis: ['v8'],
+      atendenteId: 'a1',
+      status: 'aberta',
+      prioridade: 'alta',
+      criadaEm: '2026-05-06',
+      observacoes: ''
+    },
+    {
+      id: 'd6',
+      protocolo: '2026-006',
+      cidadao: { nome: 'Lúcia Helena Martins', telefone: '(15) 99321-0987', endereco: 'Rua das Flores, 100', bairro: 'Vila Nova' },
+      categoria: 'meio_ambiente',
+      descricao: 'Lixo acumulado em terreno baldio próximo à escola está atraindo ratos e insetos.',
+      regiao: 'Vila Nova',
+      vereadoresResponsaveis: ['v12'],
+      atendenteId: 'a2',
+      status: 'resolvida',
+      prioridade: 'alta',
+      criadaEm: '2026-04-25',
+      observacoes: 'Limpeza realizada pela prefeitura em 02/05.'
+    },
+    {
+      id: 'd7',
+      protocolo: '2026-007',
+      cidadao: { nome: 'Paulo Henrique Oliveira', telefone: '(15) 99210-9876', endereco: 'Av. Central, 800', bairro: 'Centro' },
+      categoria: 'educacao',
+      descricao: 'Pais reclamam de falta de merenda escolar adequada na escola municipal Anita Garibaldi.',
+      regiao: 'Centro',
+      vereadoresResponsaveis: ['v7'],
+      atendenteId: 'a1',
+      status: 'em_atendimento',
+      prioridade: 'alta',
+      criadaEm: '2026-05-01',
+      observacoes: 'Vereadora Goreti já protocolou requerimento.'
+    },
+    {
+      id: 'd8',
+      protocolo: '2026-008',
+      cidadao: { nome: 'Sandra Regina Costa', telefone: '(15) 99109-8765', endereco: 'Rua Bela Vista, 22', bairro: 'Jardim Bela Vista' },
+      categoria: 'social',
+      descricao: 'Idosa solicita ajuda para acessar benefício do BPC. Não tem familiares para auxiliar.',
+      regiao: 'Jardim Bela Vista',
+      vereadoresResponsaveis: ['v10', 'v3'],
+      atendenteId: 'a2',
+      status: 'aberta',
+      prioridade: 'media',
+      criadaEm: '2026-05-06',
+      observacoes: 'Encaminhada também ao CRAS.'
+    }
   ]
 };
 
 // Helpers de acesso
 window.getVereador = (id) => MOCK_DATA.vereadores.find(v => v.id === id);
+window.getAtendente = (id) => MOCK_DATA.atendentes.find(a => a.id === id);
+window.getUsuario = (id) => getVereador(id) || getAtendente(id);
 window.getTarefa = (id) => MOCK_DATA.tarefas.find(t => t.id === id);
 window.getRelatorio = (id) => MOCK_DATA.relatorios.find(r => r.id === id);
+window.getDemanda = (id) => MOCK_DATA.demandas.find(d => d.id === id);
+
+// Retorna o papel do usuário: 'admin' | 'atendente' | 'vereador'
+window.getPapel = function(user) {
+  if (!user) return null;
+  if (user.isAdmin) return 'admin';
+  if (user.papel === 'atendente') return 'atendente';
+  return 'vereador';
+};
+
+window.papelLabel = (p) => ({
+  admin: 'Presidente',
+  atendente: 'Atendente',
+  vereador: 'Vereador'
+}[p] || p);
 
 // Resolve o caminho da foto do usuário corretamente (lida com BASE diferente entre páginas)
 // Se for dataURL (upload local), usa direto. Senão, busca do MOCK_DATA com BASE da página atual.
@@ -416,6 +575,46 @@ window.cargoIcone = function(cargo) {
 window.ehMesaDiretora = function(cargo) {
   return hierarquiaMesa(cargo) < 99;
 };
+
+// === Demandas: helpers ===
+window.demandaCategorias = [
+  { id: 'saude', label: 'Saúde', icone: '🏥' },
+  { id: 'educacao', label: 'Educação', icone: '📚' },
+  { id: 'obras', label: 'Obras e Pavimentação', icone: '🚧' },
+  { id: 'iluminacao', label: 'Iluminação Pública', icone: '💡' },
+  { id: 'seguranca', label: 'Segurança', icone: '👮' },
+  { id: 'meio_ambiente', label: 'Meio Ambiente', icone: '🌳' },
+  { id: 'cultura', label: 'Cultura e Lazer', icone: '🎭' },
+  { id: 'social', label: 'Assistência Social', icone: '🤝' },
+  { id: 'transporte', label: 'Transporte', icone: '🚌' },
+  { id: 'outros', label: 'Outros', icone: '📋' }
+];
+
+window.demandaCategoriaLabel = (id) => {
+  const c = demandaCategorias.find(x => x.id === id);
+  return c ? `${c.icone} ${c.label}` : id;
+};
+
+window.demandaStatusLabel = (s) => ({
+  aberta: 'Aberta',
+  em_atendimento: 'Em atendimento',
+  resolvida: 'Resolvida',
+  arquivada: 'Arquivada'
+}[s] || s);
+
+window.demandaStatusBadge = (s) => ({
+  aberta: 'badge-warning',
+  em_atendimento: 'badge-primary',
+  resolvida: 'badge-success',
+  arquivada: 'badge-muted'
+}[s] || 'badge-muted');
+
+window.demandaStatusCor = (s) => ({
+  aberta: '#f59e0b',
+  em_atendimento: '#3b82f6',
+  resolvida: '#10b981',
+  arquivada: '#9ca3af'
+}[s] || '#9ca3af');
 
 // Fallback de imagem: SVG inline verde com ícone de câmera
 window.imgFallback = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%230F5132'/%3E%3Cstop offset='1' stop-color='%230a3d24'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='800' height='600'/%3E%3Ctext x='50%25' y='45%25' fill='%23FFD700' font-family='sans-serif' font-size='80' text-anchor='middle' dy='.3em'%3E%F0%9F%93%B7%3C/text%3E%3Ctext x='50%25' y='65%25' fill='%23FFD700' font-family='sans-serif' font-size='22' font-weight='600' text-anchor='middle'%3EImagem indispon%C3%ADvel%3C/text%3E%3C/svg%3E";

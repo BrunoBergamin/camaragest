@@ -127,24 +127,24 @@
     <!-- Cards resumo -->
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <div class="card metric-card green card-hover">
-        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Tarefas pendentes</div>
+        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold" id="card1Label">Tarefas pendentes</div>
         <div class="metric-value" id="totalPendentes">0</div>
         <div class="text-xs text-gray-500 mt-2" id="pendentesSub"></div>
       </div>
       <div class="card metric-card amber card-hover">
-        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Em andamento</div>
+        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold" id="card2Label">Em andamento</div>
         <div class="metric-value" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="totalAndamento">0</div>
-        <div class="text-xs text-gray-500 mt-2">Tarefas ativas</div>
+        <div class="text-xs text-gray-500 mt-2" id="card2Sub">Tarefas ativas</div>
       </div>
       <div class="card metric-card gold card-hover">
-        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Relatórios</div>
-        <div class="metric-value gold" id="totalRelatorios">0</div>
-        <div class="text-xs text-gray-500 mt-2">Total publicado</div>
+        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold" id="card3Label">Demandas abertas</div>
+        <div class="metric-value gold" id="totalDemandas">0</div>
+        <div class="text-xs text-gray-500 mt-2" id="card3Sub">Aguardando atendimento</div>
       </div>
       <div class="card metric-card blue card-hover">
-        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Vereadores ativos</div>
+        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold" id="card4Label">Vereadores ativos</div>
         <div class="metric-value" style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="totalVereadores">0</div>
-        <div class="text-xs text-gray-500 mt-2">Equipe da Câmara</div>
+        <div class="text-xs text-gray-500 mt-2" id="card4Sub">Equipe da Câmara</div>
       </div>
     </section>
 
@@ -182,8 +182,20 @@
       </div>
     </section>
 
+    <!-- Demandas em destaque -->
+    <section class="card mb-6" id="secaoDemandas">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="font-bold text-lg text-gray-900 flex items-center gap-2">📋 Demandas em destaque</h2>
+          <p class="text-xs text-gray-500" id="demandasSubtitulo">Demandas dos cidadãos abertas e em atendimento</p>
+        </div>
+        <a href="demandas.html" class="text-sm font-semibold hover:underline" style="color: var(--primary);">Ver todas →</a>
+      </div>
+      <div id="listaDemandasDash" class="grid md:grid-cols-2 gap-3"></div>
+    </section>
+
     <!-- Listas -->
-    <div class="grid lg:grid-cols-3 gap-6">
+    <div class="grid lg:grid-cols-3 gap-6" id="grupoListasTarefasRel">
       <section class="card lg:col-span-2">
         <div class="flex items-center justify-between mb-4">
           <h2 class="font-bold text-lg text-gray-900">Próximas tarefas</h2>
@@ -222,12 +234,22 @@
     const saud = hora < 12 ? 'Bom dia' : (hora < 18 ? 'Boa tarde' : 'Boa noite');
     const primeiroNome = user.nome.split(' ')[0];
 
+    const papel = getPapel(user);
+
     document.getElementById('vipAvatar').src = getFotoAtual(user);
-    document.getElementById('vipBadge').textContent = user.isAdmin ? '⚜️ PRESIDENTE DA CÂMARA' : '🏛️ ' + user.cargo.toUpperCase();
+    const badgeMap = {
+      admin: '⚜️ PRESIDENTE DA CÂMARA',
+      atendente: '📞 ATENDENTE DO GABINETE',
+      vereador: '🏛️ ' + (user.cargo || 'VEREADOR').toUpperCase()
+    };
+    document.getElementById('vipBadge').textContent = badgeMap[papel];
     document.getElementById('vipGreeting').textContent = `${saud}, ${primeiroNome}.`;
-    document.getElementById('vipMsg').textContent = user.isAdmin
-      ? `Sua Câmara está sob seu comando. Aqui está o panorama completo de Iperó.`
-      : `Aqui estão suas tarefas e atividades em Iperó.`;
+    const msgMap = {
+      admin: 'Sua Câmara está sob seu comando. Aqui está o panorama completo de Iperó.',
+      atendente: 'Aqui estão as demandas registradas e o andamento dos atendimentos.',
+      vereador: 'Aqui estão suas tarefas, demandas e atividades em Iperó.'
+    };
+    document.getElementById('vipMsg').textContent = msgMap[papel];
 
     const data = new Date();
     document.getElementById('vipDate').textContent = data.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
@@ -239,14 +261,21 @@
     document.getElementById('fraseAutor').textContent = '— ' + frase.autor;
 
     // === PERMISSÃO ===
-    const tarefasVisiveis = user.isAdmin
+    const tarefasVisiveis = papel === 'admin'
       ? MOCK_DATA.tarefas
       : MOCK_DATA.tarefas.filter(t => t.responsavelId === user.id || t.criadorId === user.id);
+
+    const demandasVisiveis = papel === 'vereador'
+      ? MOCK_DATA.demandas.filter(d => d.vereadoresResponsaveis.includes(user.id))
+      : MOCK_DATA.demandas;
 
     // === MÉTRICAS COM ANIMAÇÃO SUAVE ===
     const pend = tarefasVisiveis.filter(t => t.status === 'pendente');
     const and = tarefasVisiveis.filter(t => t.status === 'em_andamento');
     const conc = tarefasVisiveis.filter(t => t.status === 'concluida');
+    const demAbertas = demandasVisiveis.filter(d => d.status === 'aberta').length;
+    const demAtend = demandasVisiveis.filter(d => d.status === 'em_atendimento').length;
+    const demResolv = demandasVisiveis.filter(d => d.status === 'resolvida').length;
 
     function animateCount(id, target, duration = 1400) {
       const el = document.getElementById(id);
@@ -262,12 +291,28 @@
       }
       requestAnimationFrame(tick);
     }
-    animateCount('totalPendentes', pend.length);
-    animateCount('totalAndamento', and.length);
-    animateCount('totalRelatorios', MOCK_DATA.relatorios.length);
-    animateCount('totalVereadores', MOCK_DATA.vereadores.filter(v => v.ativo).length);
-
-    document.getElementById('pendentesSub').textContent = user.isAdmin ? 'Total da Câmara' : 'Suas tarefas';
+    // Cards adaptados conforme papel
+    if (papel === 'atendente') {
+      // Atendente: demandas abertas, em atendimento, resolvidas, vereadores
+      document.getElementById('card1Label').textContent = 'Demandas abertas';
+      document.getElementById('card2Label').textContent = 'Em atendimento';
+      document.getElementById('card3Label').textContent = 'Resolvidas';
+      document.getElementById('card2Sub').textContent = 'Sendo resolvidas';
+      document.getElementById('card3Sub').textContent = 'Atendidas com sucesso';
+      animateCount('totalPendentes', demAbertas);
+      animateCount('totalAndamento', demAtend);
+      animateCount('totalDemandas', demResolv);
+      animateCount('totalVereadores', MOCK_DATA.vereadores.filter(v => v.ativo).length);
+      document.getElementById('pendentesSub').textContent = 'Aguardando vereador';
+    } else {
+      // Admin e vereador: tarefas pendentes, em andamento, demandas, vereadores
+      animateCount('totalPendentes', pend.length);
+      animateCount('totalAndamento', and.length);
+      animateCount('totalDemandas', demAbertas);
+      animateCount('totalVereadores', MOCK_DATA.vereadores.filter(v => v.ativo).length);
+      document.getElementById('pendentesSub').textContent = papel === 'admin' ? 'Total da Câmara' : 'Suas tarefas';
+      document.getElementById('card3Sub').textContent = papel === 'vereador' ? 'Suas demandas' : 'Total da Câmara';
+    }
 
     // === GRÁFICO 1: TAREFAS POR STATUS (BARRAS) ===
     const ctx1 = document.getElementById('chartTarefas').getContext('2d');
@@ -385,6 +430,54 @@
         }
       }
     });
+
+    // === DEMANDAS EM DESTAQUE ===
+    document.getElementById('demandasSubtitulo').textContent = ({
+      admin: 'Visão geral das demandas dos cidadãos.',
+      atendente: 'Demandas registradas e em andamento.',
+      vereador: 'Demandas direcionadas a você.'
+    })[papel];
+
+    const demandasDestaque = demandasVisiveis
+      .filter(d => d.status !== 'arquivada')
+      .sort((a, b) => {
+        // Aberta primeiro, depois em_atendimento, depois resolvida
+        const ordem = { aberta: 0, em_atendimento: 1, resolvida: 2 };
+        const da = ordem[a.status] ?? 9, db = ordem[b.status] ?? 9;
+        if (da !== db) return da - db;
+        return b.criadaEm.localeCompare(a.criadaEm);
+      })
+      .slice(0, 4);
+
+    document.getElementById('listaDemandasDash').innerHTML = demandasDestaque.map(d => {
+      const cat = demandaCategorias.find(c => c.id === d.categoria) || { icone: '📋' };
+      const vereadoresMini = d.vereadoresResponsaveis.slice(0, 3).map(vid => {
+        const v = getVereador(vid);
+        if (!v) return '';
+        return `<img src="${v.foto}" class="w-6 h-6 rounded-full object-cover border-2 border-white" title="${v.nome}" alt="">`;
+      }).join('');
+      const extras = d.vereadoresResponsaveis.length > 3 ? `<span class="text-xs text-gray-500 ml-1">+${d.vereadoresResponsaveis.length - 3}</span>` : '';
+      return `
+        <a href="demanda.html?id=${d.id}" class="block p-3 rounded-lg border border-gray-200 hover:border-yellow-400 hover:bg-yellow-50 transition" style="text-decoration: none; color: inherit; border-left: 4px solid ${demandaStatusCor(d.status)};">
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="text-lg">${cat.icone}</span>
+            <span class="badge ${demandaStatusBadge(d.status)}" style="font-size: 0.65rem;">${demandaStatusLabel(d.status)}</span>
+            <span class="text-xs font-mono text-gray-500">#${d.protocolo}</span>
+          </div>
+          <div class="font-semibold text-sm text-gray-900 truncate">${d.cidadao.nome}</div>
+          <div class="text-xs text-gray-600 line-clamp-2 mt-1">${d.descricao}</div>
+          <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+            <div class="flex items-center gap-1">${vereadoresMini}${extras}</div>
+            <span class="text-xs text-gray-400">📍 ${d.cidadao.bairro}</span>
+          </div>
+        </a>
+      `;
+    }).join('') || '<p class="text-gray-500 text-sm col-span-full text-center py-4">Nenhuma demanda em andamento.</p>';
+
+    // Atendente: esconde seções que não são do papel dele
+    if (papel === 'atendente') {
+      document.getElementById('grupoListasTarefasRel').style.display = 'none';
+    }
 
     // === LISTAS ===
     const proximas = tarefasVisiveis

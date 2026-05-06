@@ -41,14 +41,48 @@ window.UI = {
     const user = Auth.current();
     if (!user) return '';
     const isDemo = Auth.isDemo();
-    const adminLink = user.isAdmin
-      ? `<a href="admin.html" class="nav-link ${active === 'admin' ? 'active' : ''}">Admin</a>`
-      : '';
+    const papel = getPapel(user);
+
+    // Constrói os links da navbar conforme o papel
+    function linkItem(href, key, label, condicao = true) {
+      if (!condicao) return '';
+      return `<a href="${href}" class="nav-link ${active === key ? 'active' : ''}">${label}</a>`;
+    }
+
+    let links = '';
+    if (papel === 'atendente') {
+      // Atendente: Dashboard + Demandas + Perfil
+      links = `
+        ${linkItem('dashboard.html', 'dashboard', 'Painel')}
+        ${linkItem('demandas.html', 'demandas', 'Demandas')}
+        ${linkItem('perfil.html', 'perfil', 'Meu perfil')}
+      `;
+    } else if (papel === 'admin') {
+      // Admin: tudo
+      links = `
+        ${linkItem('dashboard.html', 'dashboard', 'Dashboard')}
+        ${linkItem('tarefas.html', 'tarefas', 'Tarefas')}
+        ${linkItem('demandas.html', 'demandas', 'Demandas')}
+        ${linkItem('relatorios.html', 'relatorios', 'Relatórios')}
+        ${linkItem('reuniao.html', 'reuniao', 'Reunião')}
+        ${linkItem('perfil.html', 'perfil', 'Meu perfil')}
+        ${linkItem('admin.html', 'admin', 'Admin')}
+      `;
+    } else {
+      // Vereador comum
+      links = `
+        ${linkItem('dashboard.html', 'dashboard', 'Dashboard')}
+        ${linkItem('tarefas.html', 'tarefas', 'Tarefas')}
+        ${linkItem('demandas.html', 'demandas', 'Demandas')}
+        ${linkItem('relatorios.html', 'relatorios', 'Relatórios')}
+        ${linkItem('reuniao.html', 'reuniao', 'Reunião')}
+        ${linkItem('perfil.html', 'perfil', 'Meu perfil')}
+      `;
+    }
 
     const banner = isDemo ? `
       <div class="demo-banner">
         ⚡ MODO DEMONSTRAÇÃO. Os dados são fictícios e podem ser reiniciados.
-        <a href="../index.html#contato">Solicitar acesso completo</a>
       </div>
     ` : '';
 
@@ -59,12 +93,7 @@ window.UI = {
           <img src="../assets/images/logo-ipero.jpg" alt="Câmara de Iperó" style="height: 32px; width: auto; display: block;">
         </a>
         <div class="nav-links">
-          <a href="dashboard.html" class="nav-link ${active === 'dashboard' ? 'active' : ''}">Dashboard</a>
-          <a href="tarefas.html" class="nav-link ${active === 'tarefas' ? 'active' : ''}">Tarefas</a>
-          <a href="relatorios.html" class="nav-link ${active === 'relatorios' ? 'active' : ''}">Relatórios</a>
-          <a href="reuniao.html" class="nav-link ${active === 'reuniao' ? 'active' : ''}" title="Videochamada">Reunião</a>
-          <a href="perfil.html" class="nav-link ${active === 'perfil' ? 'active' : ''}">Meu perfil</a>
-          ${adminLink}
+          ${links}
         </div>
         <div style="display:flex; align-items:center; gap:0.6rem;">
           <div class="user-chip hide-mobile">
