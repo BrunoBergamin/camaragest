@@ -1,8 +1,15 @@
 // Câmara de Iperó: Dados dos vereadores reais (legislatura 2025-2028)
 // Fonte: site oficial https://camaraipero.sp.gov.br/
 
-// Prefixo para imagens (lida com páginas na raiz e em /app/)
-const BASE = location.pathname.includes('/app/') ? '../' : '';
+// URL absoluta do site (raiz do projeto), funciona em /app/ e na raiz, GitHub Pages e localhost
+const BASE = (function () {
+  const path = location.pathname;
+  if (path.includes('/app/')) {
+    return path.substring(0, path.indexOf('/app/') + 1);
+  }
+  const last = path.lastIndexOf('/');
+  return last >= 0 ? path.substring(0, last + 1) : '/';
+})();
 
 window.MOCK_DATA = {
   vereadores: [
