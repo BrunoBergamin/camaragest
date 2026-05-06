@@ -280,7 +280,7 @@
           <div>
             <label class="form-label">Responsável</label>
             <div class="form-input flex items-center gap-2" style="background: var(--surface-alt); cursor: not-allowed;">
-              <img src="${user.foto}" class="w-6 h-6 rounded-full object-cover" alt="">
+              <img src="${getFotoAtual(user)}" class="w-6 h-6 rounded-full object-cover" alt="">
               <span class="text-gray-700">${user.nome} (você)</span>
             </div>
             <input type="hidden" name="responsavelId" value="${user.id}">

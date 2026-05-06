@@ -334,6 +334,15 @@ window.getVereador = (id) => MOCK_DATA.vereadores.find(v => v.id === id);
 window.getTarefa = (id) => MOCK_DATA.tarefas.find(t => t.id === id);
 window.getRelatorio = (id) => MOCK_DATA.relatorios.find(r => r.id === id);
 
+// Resolve o caminho da foto do usuário corretamente (lida com BASE diferente entre páginas)
+// Se for dataURL (upload local), usa direto. Senão, busca do MOCK_DATA com BASE da página atual.
+window.getFotoAtual = function(user) {
+  if (!user) return '';
+  if (user.foto && user.foto.startsWith('data:')) return user.foto;
+  const v = getVereador(user.id);
+  return v ? v.foto : (user.foto || '');
+};
+
 window.fmtData = (iso) => {
   if (!iso) return '';
   const [y, m, d] = iso.split('-');

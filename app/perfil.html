@@ -61,7 +61,7 @@
     const user = Auth.current();
     document.getElementById('navbar').innerHTML = UI.renderAppNavbar('perfil');
 
-    document.getElementById('fotoPerfil').src = user.foto;
+    document.getElementById('fotoPerfil').src = getFotoAtual(user);
     document.getElementById('nomeAtual').textContent = user.nome;
     document.getElementById('cargoAtual').textContent = `${user.cargo},${user.partido}`;
 

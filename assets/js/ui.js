@@ -68,7 +68,7 @@ window.UI = {
         </div>
         <div style="display:flex; align-items:center; gap:0.6rem;">
           <div class="user-chip hide-mobile">
-            <img src="${user.foto}" alt="">
+            <img src="${getFotoAtual(user)}" alt="" onerror="this.style.display='none'">
             <span>${user.nome.split(' ')[0]}</span>
           </div>
           <button class="btn btn-sm btn-ghost" style="color:white;" onclick="Auth.logout(); location.href='../index.html';">Sair</button>
