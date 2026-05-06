@@ -382,5 +382,40 @@ window.categoriaLabel = (c) => ({
   outro: 'Outro'
 }[c] || c);
 
+// === Hierarquia da Mesa Diretora ===
+// Ordem oficial: Presidente, Vice, 1º Sec, 2º Sec, 3º Sec, depois vereadores comuns
+window.hierarquiaMesa = function(cargo) {
+  if (!cargo) return 99;
+  if (/Presidente da Câmara|^Presidente$/i.test(cargo)) return 1;
+  if (/Vice-?Presidente/i.test(cargo)) return 2;
+  if (/1º|Primeiro/i.test(cargo)) return 3;
+  if (/2º|Segundo/i.test(cargo)) return 4;
+  if (/3º|Terceiro/i.test(cargo)) return 5;
+  return 99;
+};
+
+// Retorna classe CSS do badge do cargo
+window.cargoBadgeClass = function(cargo) {
+  if (!cargo) return 'badge-vereador-comum';
+  if (/Presidente da Câmara|^Presidente$/i.test(cargo)) return 'badge-mesa-presidente';
+  if (/Vice-?Presidente/i.test(cargo)) return 'badge-mesa-vice';
+  if (/Secret[áa]rio/i.test(cargo)) return 'badge-mesa-secretario';
+  return 'badge-vereador-comum';
+};
+
+// Retorna ícone do cargo (emoji decorativo)
+window.cargoIcone = function(cargo) {
+  if (!cargo) return '';
+  if (/Presidente da Câmara|^Presidente$/i.test(cargo)) return '⚜️';
+  if (/Vice-?Presidente/i.test(cargo)) return '🎖️';
+  if (/Secret[áa]rio/i.test(cargo)) return '📝';
+  return '';
+};
+
+// É membro da Mesa Diretora?
+window.ehMesaDiretora = function(cargo) {
+  return hierarquiaMesa(cargo) < 99;
+};
+
 // Fallback de imagem: SVG inline verde com ícone de câmera
 window.imgFallback = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%230F5132'/%3E%3Cstop offset='1' stop-color='%230a3d24'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='800' height='600'/%3E%3Ctext x='50%25' y='45%25' fill='%23FFD700' font-family='sans-serif' font-size='80' text-anchor='middle' dy='.3em'%3E%F0%9F%93%B7%3C/text%3E%3Ctext x='50%25' y='65%25' fill='%23FFD700' font-family='sans-serif' font-size='22' font-weight='600' text-anchor='middle'%3EImagem indispon%C3%ADvel%3C/text%3E%3C/svg%3E";

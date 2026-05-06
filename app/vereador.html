@@ -39,9 +39,8 @@
           <div class="flex flex-col md:flex-row gap-6 items-center md:items-start">
             <img src="${v.foto}" class="avatar avatar-xl" alt="">
             <div class="text-center md:text-left flex-1">
-              <div class="flex items-center gap-2 justify-center md:justify-start mb-2">
-                ${v.isAdmin ? '<span class="badge badge-accent">Presidente</span>' : ''}
-                <span class="badge badge-primary">${v.cargo}</span>
+              <div class="flex items-center gap-2 justify-center md:justify-start mb-2 flex-wrap">
+                <span class="badge ${cargoBadgeClass(v.cargo)}">${cargoIcone(v.cargo)} ${v.cargo}</span>
                 <span class="badge badge-muted">${v.partido}</span>
               </div>
               <h1 class="text-2xl font-bold mb-2">${v.nome}</h1>

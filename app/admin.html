@@ -98,7 +98,9 @@
         document.getElementById('totalGeral').textContent = total;
       }
 
-      document.getElementById('tbodyVer').innerHTML = vereadores.map(v => `
+      // Ordena por hierarquia da Mesa Diretora
+      const vereadoresOrd = [...vereadores].sort((a, b) => hierarquiaMesa(a.cargo) - hierarquiaMesa(b.cargo));
+      document.getElementById('tbodyVer').innerHTML = vereadoresOrd.map(v => `
         <tr class="border-t border-gray-100 hover:bg-gray-50">
           <td class="p-3">
             <div class="flex items-center gap-2">
@@ -110,7 +112,7 @@
             </div>
           </td>
           <td class="p-3 hide-mobile">
-            ${v.isAdmin ? '<span class="badge badge-accent">Presidente</span>' : `<span class="badge badge-primary">${v.cargo}</span>`}
+            <span class="badge ${cargoBadgeClass(v.cargo)}">${cargoIcone(v.cargo)} ${v.cargo}</span>
           </td>
           <td class="p-3 hide-mobile text-gray-600">${v.email}</td>
           <td class="p-3">

@@ -140,16 +140,22 @@
   <script src="assets/js/data.js"></script>
   <script src="assets/js/ui.js"></script>
   <script>
-    // Vereadores
-    document.getElementById('gridVereadores').innerHTML = MOCK_DATA.vereadores.filter(v => v.ativo).map(v => `
-      <div class="card text-center p-4">
-        <img src="${v.foto}" class="avatar avatar-lg mx-auto mb-3" alt="${v.nome}">
-        <div class="font-bold text-sm mb-1 text-gray-900">${v.nome.split(' ').slice(0,2).join(' ')}</div>
-        <div class="text-xs text-gray-500 mb-2">${v.cargo},${v.partido}</div>
-        ${v.isAdmin ? '<span class="badge badge-accent" style="font-size: 0.65rem;">Presidente</span>' : ''}
-        <div class="text-xs text-gray-400 mt-2">📧 Contato disponível</div>
-      </div>
-    `).join('');
+    // Vereadores ordenados por hierarquia (Mesa Diretora primeiro)
+    const ativosPub = MOCK_DATA.vereadores.filter(v => v.ativo)
+      .sort((a, b) => hierarquiaMesa(a.cargo) - hierarquiaMesa(b.cargo));
+
+    document.getElementById('gridVereadores').innerHTML = ativosPub.map(v => {
+      const destaque = ehMesaDiretora(v.cargo) ? 'border-top: 3px solid #FFD700;' : '';
+      return `
+        <div class="card text-center p-4" style="${destaque}">
+          <img src="${v.foto}" class="avatar avatar-lg mx-auto mb-3" alt="${v.nome}" onerror="this.onerror=null; this.src=window.imgFallback;">
+          <div class="font-bold text-sm mb-1 text-gray-900">${v.nome.split(' ').slice(0,2).join(' ')}</div>
+          <div class="text-xs text-gray-500 mb-2">${v.partido}</div>
+          <span class="badge ${cargoBadgeClass(v.cargo)}" style="font-size: 0.65rem;">${cargoIcone(v.cargo)} ${v.cargo}</span>
+          <div class="text-xs text-gray-400 mt-2">📧 Contato disponível</div>
+        </div>
+      `;
+    }).join('');
 
     function animateCount(id, target, duration = 1400) {
       const el = document.getElementById(id);
