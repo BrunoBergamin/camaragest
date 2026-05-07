@@ -15,7 +15,7 @@ window.MOCK_DATA = {
   atendentes: [
     {
       id: 'a1',
-      nome: 'Maria Almeida',
+      nome: 'Maria',
       cargo: 'Atendente',
       bio: 'Atendente do gabinete da Câmara. Recebe demandas dos cidadãos e direciona aos vereadores responsáveis.',
       foto: 'https://i.pravatar.cc/300?img=47',
