@@ -66,6 +66,35 @@ Mesma lógica das notificações por email, mas via WhatsApp Business. **Custo:*
 ### 📅 Calendário de sessões e agenda pública
 Sessões, audiências e reuniões em calendário único. Versão pública para o cidadão saber quando participar. **Custo:** desenvolvimento personalizado.
 
+### 🗺️ Mapa interativo de demandas (próxima evolução prioritária)
+
+Mapa da cidade de Iperó com todas as demandas dos cidadãos plotadas por localização geográfica.
+
+**Como funciona:**
+- Atendente registra demanda com endereço e bairro
+- Sistema mostra um pino colorido no mapa (verde = resolvida, amarelo = em atendimento, vermelho = aberta urgente)
+- Vereador clica no pino → popup com nome do cidadão, descrição e botões **"🚗 Abrir no Waze"** e **"🗺️ Abrir no Google Maps"**
+- Os botões geram link direto que abre o app de navegação no celular ou web no PC
+- Filtros por categoria, status, região, vereador
+- Vereadores podem ter "regiões responsáveis" cadastradas (ex: Cleyton e Luis cuidam da Vila Nova) e o sistema sugere automaticamente os responsáveis quando atendente registra uma demanda daquele bairro
+
+**Por que é forte:**
+- Transforma o sistema em ferramenta de campo (vereador sai do gabinete e vai direto pra demanda)
+- Visualização imediata de "onde a Câmara está atendendo" | argumento poderoso de transparência
+- WOW factor enorme em apresentações
+- Tecnologia gratuita (Leaflet + OpenStreetMap, sem chave de API)
+
+**Esforço de implementação:** 1-2 horas (já foi feita análise técnica). Cobertura:
+1. Adicionar `lat/lng` nas demandas
+2. Criar página `app/mapa.html` com Leaflet
+3. Adicionar campo `regioesResponsaveis` no perfil dos vereadores
+4. Adicionar link "🗺️ Mapa" na navbar
+5. Botão "📍 Ver no mapa" na página de detalhe da demanda
+
+**Custo:** desenvolvimento personalizado, sem mensalidade adicional (Leaflet e OpenStreetMap são open-source).
+
+**Status:** ideia validada, aguardando momento certo. Implementar após apresentação inicial à Câmara de Iperó (2026-05-07), conforme retorno e fechamento de contrato.
+
 ### 🏢 Multi-câmara
 Após a primeira Câmara, a plataforma pode ser oferecida a outras câmaras da região, com dados isolados por organização. **Custo:** sem impacto técnico, modelo de negócio escalável.
 

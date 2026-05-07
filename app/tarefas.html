@@ -202,12 +202,9 @@
           document.getElementById(`col${id}`).innerHTML = col.map(t => {
             const r = getVereador(t.responsavelId);
             const vencida = new Date(t.prazo) < new Date(new Date().toDateString()) && t.status !== 'concluida';
-            // Bolinha de status: verde (concluída), amarela (em andamento), vermelha (em atraso), cinza (pendente)
-            let bolinhaCor, bolinhaLabel;
-            if (t.status === 'concluida') { bolinhaCor = '#10b981'; bolinhaLabel = 'Concluída'; }
-            else if (vencida) { bolinhaCor = '#dc2626'; bolinhaLabel = 'Em atraso'; }
-            else if (t.status === 'em_andamento') { bolinhaCor = '#f59e0b'; bolinhaLabel = 'Em andamento'; }
-            else { bolinhaCor = '#9ca3af'; bolinhaLabel = 'Pendente'; }
+            // Bolinha de status (padrão: vermelho=pendente, amarelo=em_andamento, verde=concluída)
+            const bolinhaCor = statusCor(t.status);
+            const bolinhaLabel = vencida && t.status !== 'concluida' ? statusLabel(t.status) + ' (vencida)' : statusLabel(t.status);
             return `
               <div class="kanban-card priority-${t.prioridade}" onclick="abrirTarefa('${t.id}')">
                 <div class="font-semibold text-sm mb-1 flex items-center gap-2 text-gray-900">

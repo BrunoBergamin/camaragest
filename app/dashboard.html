@@ -124,26 +124,26 @@
       </div>
     </section>
 
-    <!-- Cards resumo -->
+    <!-- Cards resumo (padrão de cores: vermelho=pendente, amarelo=em andamento, verde=concluída) -->
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <div class="card metric-card green card-hover">
+      <div class="card metric-card card-hover" style="border-top: 3px solid #dc2626;">
         <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold" id="card1Label">Tarefas pendentes</div>
-        <div class="metric-value" id="totalPendentes">0</div>
+        <div class="metric-value" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="totalPendentes">0</div>
         <div class="text-xs text-gray-500 mt-2" id="pendentesSub"></div>
       </div>
-      <div class="card metric-card amber card-hover">
+      <div class="card metric-card card-hover" style="border-top: 3px solid #f59e0b;">
         <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold" id="card2Label">Em andamento</div>
         <div class="metric-value" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="totalAndamento">0</div>
         <div class="text-xs text-gray-500 mt-2" id="card2Sub">Tarefas ativas</div>
       </div>
-      <div class="card metric-card gold card-hover">
+      <div class="card metric-card card-hover" style="border-top: 3px solid #dc2626;">
         <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold" id="card3Label">Demandas abertas</div>
-        <div class="metric-value gold" id="totalDemandas">0</div>
+        <div class="metric-value" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="totalDemandas">0</div>
         <div class="text-xs text-gray-500 mt-2" id="card3Sub">Aguardando atendimento</div>
       </div>
-      <div class="card metric-card blue card-hover">
+      <div class="card metric-card card-hover" style="border-top: 3px solid #10b981;">
         <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold" id="card4Label">Vereadores ativos</div>
-        <div class="metric-value" style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="totalVereadores">0</div>
+        <div class="metric-value" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="totalVereadores">0</div>
         <div class="text-xs text-gray-500 mt-2" id="card4Sub">Equipe da Câmara</div>
       </div>
     </section>
@@ -299,6 +299,12 @@
       document.getElementById('card3Label').textContent = 'Resolvidas';
       document.getElementById('card2Sub').textContent = 'Sendo resolvidas';
       document.getElementById('card3Sub').textContent = 'Atendidas com sucesso';
+      // Card "Resolvidas" fica verde (substitui o padrão vermelho do card 3)
+      const card3 = document.getElementById('totalDemandas').parentElement;
+      card3.style.borderTopColor = '#10b981';
+      document.getElementById('totalDemandas').style.background = 'linear-gradient(135deg, #10b981 0%, #047857 100%)';
+      document.getElementById('totalDemandas').style.webkitBackgroundClip = 'text';
+      document.getElementById('totalDemandas').style.webkitTextFillColor = 'transparent';
       animateCount('totalPendentes', demAbertas);
       animateCount('totalAndamento', demAtend);
       animateCount('totalDemandas', demResolv);
@@ -325,14 +331,14 @@
           label: 'Tarefas',
           data: [pend.length, and.length, conc.length],
           backgroundColor: [
-            'rgba(156, 163, 175, 0.85)',
+            'rgba(220, 38, 38, 0.85)',
             'rgba(245, 158, 11, 0.85)',
             'rgba(16, 185, 129, 0.85)'
           ],
-          borderColor: ['#9ca3af', '#f59e0b', '#10b981'],
+          borderColor: ['#dc2626', '#f59e0b', '#10b981'],
           borderWidth: 2,
           borderRadius: 8,
-          hoverBackgroundColor: ['#9ca3af', '#f59e0b', '#10b981']
+          hoverBackgroundColor: ['#dc2626', '#f59e0b', '#10b981']
         }]
       },
       options: {
@@ -487,11 +493,8 @@
 
     document.getElementById('listaTarefas').innerHTML = proximas.map(t => {
       const resp = getVereador(t.responsavelId);
-      const vencida = new Date(t.prazo) < new Date(new Date().toDateString());
-      let bolinhaCor;
-      if (vencida) bolinhaCor = '#dc2626';
-      else if (t.status === 'em_andamento') bolinhaCor = '#f59e0b';
-      else bolinhaCor = '#9ca3af';
+      const vencida = new Date(t.prazo) < new Date(new Date().toDateString()) && t.status !== 'concluida';
+      const bolinhaCor = statusCor(t.status);
       return `
         <div class="flex items-center justify-between p-3 rounded border border-gray-100 hover:bg-gray-50 transition">
           <div class="flex items-center gap-3 min-w-0">

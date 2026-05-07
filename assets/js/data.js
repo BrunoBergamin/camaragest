@@ -522,10 +522,17 @@ window.statusLabel = (s) => ({
 }[s] || s);
 
 window.statusBadge = (s) => ({
-  pendente: 'badge-muted',
+  pendente: 'badge-danger',
   em_andamento: 'badge-warning',
   concluida: 'badge-success'
 }[s] || 'badge-muted');
+
+// Cor hex padrão por status (usado em bolinhas, gráficos, bordas)
+window.statusCor = (s) => ({
+  pendente: '#dc2626',     // vermelho
+  em_andamento: '#f59e0b', // amarelo
+  concluida: '#10b981'     // verde
+}[s] || '#9ca3af');
 
 window.prioridadeLabel = (p) => ({ baixa: 'Baixa', media: 'Média', alta: 'Alta' }[p] || p);
 window.prioridadeBadge = (p) => ({
@@ -603,17 +610,17 @@ window.demandaStatusLabel = (s) => ({
 }[s] || s);
 
 window.demandaStatusBadge = (s) => ({
-  aberta: 'badge-warning',
-  em_atendimento: 'badge-primary',
+  aberta: 'badge-danger',
+  em_atendimento: 'badge-warning',
   resolvida: 'badge-success',
   arquivada: 'badge-muted'
 }[s] || 'badge-muted');
 
 window.demandaStatusCor = (s) => ({
-  aberta: '#f59e0b',
-  em_atendimento: '#3b82f6',
-  resolvida: '#10b981',
-  arquivada: '#9ca3af'
+  aberta: '#dc2626',           // vermelho
+  em_atendimento: '#f59e0b',   // amarelo
+  resolvida: '#10b981',        // verde
+  arquivada: '#9ca3af'         // cinza
 }[s] || '#9ca3af');
 
 // Fallback de imagem: SVG inline verde com ícone de câmera
