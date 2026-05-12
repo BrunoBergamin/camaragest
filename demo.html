@@ -330,21 +330,21 @@
 
       <div class="grid md:grid-cols-3 gap-6">
 
-        <!-- Card Vereador Presidente da Mesa -->
-        <button id="entrar-presidente" class="role-card admin">
-          <div class="avatar-frame">
-            <img src="assets/images/vereadores/v1.jpg" alt="Alysson Alessandro de Barros">
+        <!-- Card Administrador (Omini Fox) -->
+        <button id="entrar-admin" class="role-card admin">
+          <div class="avatar-frame" style="background: white;">
+            <img src="https://i.pravatar.cc/300?u=ominifox" alt="Omini Fox" style="object-position: center;">
           </div>
-          <span class="role-badge admin">Vereador (Presidente da Mesa)</span>
-          <h3 class="text-xl font-bold mt-2 mb-1" style="color: #1F2937;">Alysson Alessandro</h3>
-          <p class="text-sm text-gray-500 mb-4">Vereador, atualmente Presidente da Mesa</p>
+          <span class="role-badge admin">Administrador do Sistema</span>
+          <h3 class="text-xl font-bold mt-2 mb-1" style="color: #1F2937;">Omini Fox</h3>
+          <p class="text-sm text-gray-500 mb-4">Equipe técnica responsável</p>
           <ul class="role-features">
-            <li>Acompanha suas tarefas pessoais</li>
-            <li>Recebe demandas direcionadas a ele</li>
-            <li>Cadastra seus assessores de gabinete</li>
-            <li>Cria reuniões por vídeo</li>
+            <li>Configura todo o sistema</li>
+            <li>Cadastra vereadores e atendentes</li>
+            <li>Visão geral de tudo</li>
+            <li>Suporte e manutenção contínua</li>
           </ul>
-          <span class="role-cta admin">Entrar como Vereador</span>
+          <span class="role-cta admin">Entrar como Administrador</span>
         </button>
 
         <!-- Card Atendente -->
@@ -393,8 +393,8 @@
   <script src="assets/js/data.js"></script>
   <script src="assets/js/auth-mock.js"></script>
   <script>
-    document.getElementById('entrar-presidente').addEventListener('click', () => {
-      Auth.loginAs('v1', true);
+    document.getElementById('entrar-admin').addEventListener('click', () => {
+      Auth.loginAs('s1', true);
       window.location.href = 'app/dashboard.html';
     });
     document.getElementById('entrar-atendente').addEventListener('click', () => {
