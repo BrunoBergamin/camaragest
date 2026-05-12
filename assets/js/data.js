@@ -19,7 +19,7 @@ window.MOCK_DATA = {
       nome: 'Omini Fox',
       cargo: 'Administrador do Sistema',
       bio: 'Equipe técnica responsável pela manutenção e configuração da plataforma.',
-      foto: 'https://i.pravatar.cc/300?u=ominifox',
+      foto: BASE + 'assets/images/logo-ominifox.ico',
       telefone: '',
       email: 'admin@ominifox.com.br',
       papel: 'superadmin',
