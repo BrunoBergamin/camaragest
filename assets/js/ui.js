@@ -51,14 +51,14 @@ window.UI = {
 
     let links = '';
     if (papel === 'atendente') {
-      // Atendente: Dashboard + Demandas + Perfil
+      // Atendente: Painel + Demandas + Perfil
       links = `
         ${linkItem('dashboard.html', 'dashboard', 'Painel')}
         ${linkItem('demandas.html', 'demandas', 'Demandas')}
         ${linkItem('perfil.html', 'perfil', 'Meu perfil')}
       `;
-    } else if (papel === 'admin') {
-      // Admin: tudo
+    } else if (papel === 'superadmin') {
+      // Superadmin (Omini Fox): tudo + Admin
       links = `
         ${linkItem('dashboard.html', 'dashboard', 'Dashboard')}
         ${linkItem('tarefas.html', 'tarefas', 'Tarefas')}
@@ -69,13 +69,14 @@ window.UI = {
         ${linkItem('admin.html', 'admin', 'Admin')}
       `;
     } else {
-      // Vereador comum
+      // Vereador comum (inclui presidente)
       links = `
         ${linkItem('dashboard.html', 'dashboard', 'Dashboard')}
         ${linkItem('tarefas.html', 'tarefas', 'Tarefas')}
         ${linkItem('demandas.html', 'demandas', 'Demandas')}
         ${linkItem('relatorios.html', 'relatorios', 'Relatórios')}
         ${linkItem('reuniao.html', 'reuniao', 'Reunião')}
+        ${linkItem('assessores.html', 'assessores', 'Assessores')}
         ${linkItem('perfil.html', 'perfil', 'Meu perfil')}
       `;
     }

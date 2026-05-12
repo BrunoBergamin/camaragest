@@ -12,6 +12,22 @@ const BASE = (function () {
 })();
 
 window.MOCK_DATA = {
+  // Super-admin (Omini Fox): só nós temos acesso. Não aparece em listagens públicas.
+  superadmins: [
+    {
+      id: 's1',
+      nome: 'Omini Fox',
+      cargo: 'Administrador do Sistema',
+      bio: 'Equipe técnica responsável pela manutenção e configuração da plataforma.',
+      foto: 'https://i.pravatar.cc/300?u=ominifox',
+      telefone: '',
+      email: 'admin@ominifox.com.br',
+      papel: 'superadmin',
+      isAdmin: true,
+      ativo: true
+    }
+  ],
+
   atendentes: [
     {
       id: 'a1',
@@ -49,7 +65,7 @@ window.MOCK_DATA = {
       foto: BASE + 'assets/images/vereadores/v1.jpg',
       telefone: '(15) 3266-3446',
       email: 'ver.alysson@camaraipero.sp.gov.br',
-      isAdmin: true,
+      isAdmin: false,
       ativo: true
     },
     {
@@ -475,27 +491,64 @@ window.MOCK_DATA = {
       criadaEm: '2026-05-06',
       observacoes: 'Encaminhada também ao CRAS.'
     }
+  ],
+
+  // Assessores: vereador pode cadastrar pessoas da sua equipe de gabinete
+  assessores: [
+    {
+      id: 'as1',
+      vereadorId: 'v1',
+      nome: 'Lucas Andrade',
+      cargo: 'Assessor Parlamentar',
+      telefone: '(15) 99888-1111',
+      email: 'lucas.andrade@camaraipero.sp.gov.br',
+      foto: 'https://i.pravatar.cc/300?img=68',
+      ativo: true
+    },
+    {
+      id: 'as2',
+      vereadorId: 'v1',
+      nome: 'Camila Ferreira',
+      cargo: 'Assessora de Imprensa',
+      telefone: '(15) 99888-2222',
+      email: 'camila.ferreira@camaraipero.sp.gov.br',
+      foto: 'https://i.pravatar.cc/300?img=45',
+      ativo: true
+    },
+    {
+      id: 'as3',
+      vereadorId: 'v7',
+      nome: 'Bruno Santos',
+      cargo: 'Assessor Parlamentar',
+      telefone: '(15) 99888-3333',
+      email: 'bruno.santos@camaraipero.sp.gov.br',
+      foto: 'https://i.pravatar.cc/300?img=51',
+      ativo: true
+    }
   ]
 };
 
 // Helpers de acesso
 window.getVereador = (id) => MOCK_DATA.vereadores.find(v => v.id === id);
 window.getAtendente = (id) => MOCK_DATA.atendentes.find(a => a.id === id);
-window.getUsuario = (id) => getVereador(id) || getAtendente(id);
+window.getSuperadmin = (id) => (MOCK_DATA.superadmins || []).find(s => s.id === id);
+window.getAssessor = (id) => (MOCK_DATA.assessores || []).find(a => a.id === id);
+window.getUsuario = (id) => getVereador(id) || getAtendente(id) || getSuperadmin(id);
 window.getTarefa = (id) => MOCK_DATA.tarefas.find(t => t.id === id);
 window.getRelatorio = (id) => MOCK_DATA.relatorios.find(r => r.id === id);
 window.getDemanda = (id) => MOCK_DATA.demandas.find(d => d.id === id);
+window.getAssessoresDoVereador = (vereadorId) => (MOCK_DATA.assessores || []).filter(a => a.vereadorId === vereadorId && a.ativo);
 
-// Retorna o papel do usuário: 'admin' | 'atendente' | 'vereador'
+// Retorna o papel do usuário: 'superadmin' | 'atendente' | 'vereador'
 window.getPapel = function(user) {
   if (!user) return null;
-  if (user.isAdmin) return 'admin';
+  if (user.papel === 'superadmin' || (user.isAdmin && user.id && user.id.startsWith('s'))) return 'superadmin';
   if (user.papel === 'atendente') return 'atendente';
   return 'vereador';
 };
 
 window.papelLabel = (p) => ({
-  admin: 'Presidente',
+  superadmin: 'Administrador',
   atendente: 'Atendente',
   vereador: 'Vereador'
 }[p] || p);

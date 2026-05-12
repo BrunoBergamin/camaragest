@@ -238,14 +238,14 @@
 
     document.getElementById('vipAvatar').src = getFotoAtual(user);
     const badgeMap = {
-      admin: '⚜️ PRESIDENTE DA CÂMARA',
+      superadmin: '🛠️ ADMINISTRADOR DO SISTEMA',
       atendente: '📞 ATENDENTE DO GABINETE',
       vereador: '🏛️ ' + (user.cargo || 'VEREADOR').toUpperCase()
     };
     document.getElementById('vipBadge').textContent = badgeMap[papel];
     document.getElementById('vipGreeting').textContent = `${saud}, ${primeiroNome}.`;
     const msgMap = {
-      admin: 'Sua Câmara está sob seu comando. Aqui está o panorama completo de Iperó.',
+      superadmin: 'Visão completa do sistema. Você pode acessar e configurar tudo.',
       atendente: 'Aqui estão as demandas registradas e o andamento dos atendimentos.',
       vereador: 'Aqui estão suas tarefas, demandas e atividades em Iperó.'
     };
@@ -261,7 +261,7 @@
     document.getElementById('fraseAutor').textContent = '— ' + frase.autor;
 
     // === PERMISSÃO ===
-    const tarefasVisiveis = papel === 'admin'
+    const tarefasVisiveis = papel === 'superadmin'
       ? MOCK_DATA.tarefas
       : MOCK_DATA.tarefas.filter(t => t.responsavelId === user.id || t.criadorId === user.id);
 
@@ -316,7 +316,7 @@
       animateCount('totalAndamento', and.length);
       animateCount('totalDemandas', demAbertas);
       animateCount('totalVereadores', MOCK_DATA.vereadores.filter(v => v.ativo).length);
-      document.getElementById('pendentesSub').textContent = papel === 'admin' ? 'Total da Câmara' : 'Suas tarefas';
+      document.getElementById('pendentesSub').textContent = papel === 'superadmin' ? 'Total da Câmara' : 'Suas tarefas';
       document.getElementById('card3Sub').textContent = papel === 'vereador' ? 'Suas demandas' : 'Total da Câmara';
     }
 
@@ -439,7 +439,7 @@
 
     // === DEMANDAS EM DESTAQUE ===
     document.getElementById('demandasSubtitulo').textContent = ({
-      admin: 'Visão geral das demandas dos cidadãos.',
+      superadmin: 'Visão geral das demandas dos cidadãos.',
       atendente: 'Demandas registradas e em andamento.',
       vereador: 'Demandas direcionadas a você.'
     })[papel];

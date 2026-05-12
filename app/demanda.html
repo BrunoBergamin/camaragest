@@ -45,7 +45,7 @@
 
     function renderDemanda() {
       const atendente = getAtendente(d.atendenteId);
-      const podeEditarStatus = papel === 'admin' || papel === 'atendente' || (papel === 'vereador' && d.vereadoresResponsaveis.includes(user.id));
+      const podeEditarStatus = papel === 'superadmin' || papel === 'atendente' || (papel === 'vereador' && d.vereadoresResponsaveis.includes(user.id));
       const cat = demandaCategorias.find(c => c.id === d.categoria) || { icone: '📋', label: d.categoria };
 
       const vereadoresHTML = d.vereadoresResponsaveis.map(vid => {

@@ -15,8 +15,8 @@ window.Auth = {
   },
 
   loginEmailSenha(email, senha) {
-    // Procura em vereadores e atendentes
-    const todos = [...MOCK_DATA.vereadores, ...(MOCK_DATA.atendentes || [])];
+    // Procura em vereadores, atendentes e superadmins
+    const todos = [...MOCK_DATA.vereadores, ...(MOCK_DATA.atendentes || []), ...(MOCK_DATA.superadmins || [])];
     const user = todos.find(u => u.email === email);
     if (!user) return { ok: false, msg: 'Email não encontrado.' };
     if (senha.length < 4) return { ok: false, msg: 'Senha incorreta.' };
@@ -49,20 +49,26 @@ window.Auth = {
     return true;
   },
 
-  requireAdmin() {
+  // Apenas superadmin (Omini Fox)
+  requireSuperadmin() {
     const u = this.current();
-    if (!u || !u.isAdmin) {
+    if (!u || u.papel !== 'superadmin') {
       window.location.href = 'dashboard.html';
       return false;
     }
     return true;
   },
 
-  // Usuário pode gerenciar demandas? Atendente OU Admin
+  // Compatibilidade: requireAdmin agora exige superadmin
+  requireAdmin() {
+    return this.requireSuperadmin();
+  },
+
+  // Usuário pode gerenciar demandas? Atendente OU Superadmin
   podeGerenciarDemandas() {
     const u = this.current();
     if (!u) return false;
-    return u.isAdmin || u.papel === 'atendente';
+    return u.papel === 'superadmin' || u.papel === 'atendente';
   },
 
   // No modo demo, bloqueia ação destrutiva. Retorna true se foi bloqueada.
